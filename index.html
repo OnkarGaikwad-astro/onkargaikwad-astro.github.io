@@ -8,18 +8,49 @@
         body {
             margin: 0;
             font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(to bottom, #000000, #0a0f2c);
+            background: black;
             color: white;
-            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        /* Star Background */
+        .stars {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            z-index: -1;
+            animation: moveStars 200s linear infinite;
+        }
+
+        @keyframes moveStars {
+            from {background-position: 0 0;}
+            to {background-position: 0 10000px;}
+        }
+
+        .stars:after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+            radial-gradient(2px 2px at 20px 30px, white, transparent),
+            radial-gradient(2px 2px at 200px 150px, white, transparent),
+            radial-gradient(2px 2px at 400px 250px, white, transparent),
+            radial-gradient(2px 2px at 600px 100px, white, transparent),
+            radial-gradient(2px 2px at 800px 200px, white, transparent),
+            radial-gradient(2px 2px at 1000px 300px, white, transparent);
+            background-repeat: repeat;
         }
 
         nav {
             display: flex;
             justify-content: space-between;
             padding: 20px 50px;
-            background: rgba(0,0,0,0.6);
             position: fixed;
             width: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
         }
 
         nav a {
@@ -30,18 +61,26 @@
         }
 
         section {
-            padding: 120px 50px;
+            padding: 150px 50px;
             text-align: center;
         }
 
         h1 {
-            font-size: 50px;
+            font-size: 60px;
             color: cyan;
-            text-shadow: 0 0 20px cyan;
+            text-shadow: 0 0 20px cyan, 0 0 40px cyan;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px);}
+            50% { transform: translateY(-15px);}
+            100% { transform: translateY(0px);}
         }
 
         h2 {
             color: #00f7ff;
+            text-shadow: 0 0 10px #00f7ff;
         }
 
         .card {
@@ -52,37 +91,40 @@
             display: inline-block;
             width: 250px;
             backdrop-filter: blur(10px);
-            transition: 0.3s;
+            transition: 0.4s;
         }
 
         .card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px cyan;
-        }
-
-        footer {
-            text-align: center;
-            padding: 20px;
-            background: black;
-            color: gray;
+            transform: scale(1.08);
+            box-shadow: 0 0 25px cyan;
         }
 
         button {
-            padding: 10px 20px;
+            padding: 12px 25px;
             background: cyan;
             border: none;
-            border-radius: 10px;
+            border-radius: 20px;
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 0 20px cyan;
         }
 
         button:hover {
             background: white;
         }
+
+        footer {
+            padding: 20px;
+            text-align: center;
+            background: black;
+            color: gray;
+        }
     </style>
 </head>
 
 <body>
+
+<div class="stars"></div>
 
 <nav>
     <div><b>🚀 AstroOnkar</b></div>
@@ -95,53 +137,53 @@
 
 <section>
     <h1>Onkar Gaikwad</h1>
-    <p>Tech Builder | Space Enthusiast | Flutter Developer | Embedded Explorer</p>
+    <p>Tech Builder | Space Explorer | Flutter Dev | Embedded Systems</p>
     <br>
-    <button onclick="alert('Welcome to my universe 🚀')">Enter My Universe</button>
+    <button onclick="alert('Welcome Commander 🚀')">Launch Sequence</button>
 </section>
 
 <section id="about">
     <h2>🌌 About Me</h2>
     <p>
-        I build intelligent systems using Flutter, BLE microcontrollers,
-        networking tools, and futuristic ideas.
-        Passionate about space tech and robotics.
+        I build futuristic systems using Flutter, BLE microcontrollers,
+        networking tools, and AI concepts. Passionate about space technology
+        and next-generation robotics.
     </p>
 </section>
 
 <section id="projects">
-    <h2>💻 My Projects</h2>
+    <h2>🛰️ Projects</h2>
 
     <div class="card">
-        <h3>📡 BLE Distance Monitor</h3>
-        <p>Ultrasonic sensor + nRF52840 + ESP32 BLE communication system.</p>
+        <h3>📡 BLE Distance System</h3>
+        <p>nRF52840 + ESP32 BLE communication project.</p>
     </div>
 
     <div class="card">
-        <h3>📱 Flutter Apps</h3>
-        <p>Modern UI apps with animations and real-time backend.</p>
+        <h3>📱 Flutter Applications</h3>
+        <p>Modern animated mobile apps with backend.</p>
     </div>
 
     <div class="card">
-        <h3>🛰️ Mars Rover Concept</h3>
-        <p>Exploring AI-based rover control systems.</p>
+        <h3>🛰 Mars Rover Concept</h3>
+        <p>AI-powered rover control prototype idea.</p>
     </div>
 
     <div class="card">
-        <h3>🌐 Network Scanning Lab</h3>
-        <p>Learning Nmap and cybersecurity fundamentals.</p>
+        <h3>🌐 Networking Lab</h3>
+        <p>Exploring Nmap & cybersecurity fundamentals.</p>
     </div>
 
 </section>
 
 <section id="contact">
-    <h2>📬 Contact Me</h2>
+    <h2>📬 Contact</h2>
     <p>Email: your-email@gmail.com</p>
     <p>GitHub: github.com/onkargaikwad-astro</p>
 </section>
 
 <footer>
-    © 2026 Onkar Gaikwad | Built with 🚀 & Passion
+    © 2026 Onkar Gaikwad | Exploring the Universe 🚀
 </footer>
 
 </body>
