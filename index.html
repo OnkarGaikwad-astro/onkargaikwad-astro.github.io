@@ -1,10 +1,148 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Onkar's Website</title>
+    <title>Onkar Gaikwad | AstroTech</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to bottom, #000000, #0a0f2c);
+            color: white;
+            scroll-behavior: smooth;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 50px;
+            background: rgba(0,0,0,0.6);
+            position: fixed;
+            width: 100%;
+        }
+
+        nav a {
+            color: cyan;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: bold;
+        }
+
+        section {
+            padding: 120px 50px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 50px;
+            color: cyan;
+            text-shadow: 0 0 20px cyan;
+        }
+
+        h2 {
+            color: #00f7ff;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            margin: 20px;
+            border-radius: 15px;
+            display: inline-block;
+            width: 250px;
+            backdrop-filter: blur(10px);
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px cyan;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: black;
+            color: gray;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: cyan;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: white;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Hello 👋 I'm Onkar</h1>
-    <p>I love tech, space, and building cool things 🚀</p>
+
+<nav>
+    <div><b>🚀 AstroOnkar</b></div>
+    <div>
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#contact">Contact</a>
+    </div>
+</nav>
+
+<section>
+    <h1>Onkar Gaikwad</h1>
+    <p>Tech Builder | Space Enthusiast | Flutter Developer | Embedded Explorer</p>
+    <br>
+    <button onclick="alert('Welcome to my universe 🚀')">Enter My Universe</button>
+</section>
+
+<section id="about">
+    <h2>🌌 About Me</h2>
+    <p>
+        I build intelligent systems using Flutter, BLE microcontrollers,
+        networking tools, and futuristic ideas.
+        Passionate about space tech and robotics.
+    </p>
+</section>
+
+<section id="projects">
+    <h2>💻 My Projects</h2>
+
+    <div class="card">
+        <h3>📡 BLE Distance Monitor</h3>
+        <p>Ultrasonic sensor + nRF52840 + ESP32 BLE communication system.</p>
+    </div>
+
+    <div class="card">
+        <h3>📱 Flutter Apps</h3>
+        <p>Modern UI apps with animations and real-time backend.</p>
+    </div>
+
+    <div class="card">
+        <h3>🛰️ Mars Rover Concept</h3>
+        <p>Exploring AI-based rover control systems.</p>
+    </div>
+
+    <div class="card">
+        <h3>🌐 Network Scanning Lab</h3>
+        <p>Learning Nmap and cybersecurity fundamentals.</p>
+    </div>
+
+</section>
+
+<section id="contact">
+    <h2>📬 Contact Me</h2>
+    <p>Email: your-email@gmail.com</p>
+    <p>GitHub: github.com/onkargaikwad-astro</p>
+</section>
+
+<footer>
+    © 2026 Onkar Gaikwad | Built with 🚀 & Passion
+</footer>
+
 </body>
 </html>
