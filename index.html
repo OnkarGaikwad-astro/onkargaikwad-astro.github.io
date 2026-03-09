@@ -1,190 +1,375 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Onkar Gaikwad | AstroTech</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <title>Onkar Gaikwad</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300;400;600;700&display=swap" rel="stylesheet">
+    
     <style>
+        :root {
+            --obsidian: #020204;
+            --stardust: #f8fafc;
+            --nebula-purple: #7c3aed;
+            --nebula-blue: #0ea5e9;
+            --glass: rgba(255, 255, 255, 0.02);
+        }
+
+        /* --- Global Font Override --- */
+        * { 
+            font-family: 'Josefin Sans', sans-serif !important; 
+            cursor: none !important; /* Hide mouse globally */
+        }
+
         body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background: black;
-            color: white;
+            background-color: var(--obsidian);
+            color: var(--stardust);
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Star Background */
-        .stars {
+        /* --- Floating Zero-G Animation --- */
+        @keyframes drift {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(0.3deg); }
+        }
+        .floating { animation: drift 7s ease-in-out infinite; }
+        .floating-delayed { animation: drift 10s ease-in-out infinite -3s; }
+
+        /* --- Custom Interactive Reticle --- */
+        #cursor {
+            position: fixed; width: 6px; height: 6px; background: #fff;
+            border-radius: 50%; pointer-events: none; z-index: 10000;
+            box-shadow: 0 0 15px #fff;
+        }
+        #cursor-follower {
+            position: fixed; width: 40px; height: 40px; border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%; pointer-events: none; z-index: 9999;
+            transition: transform 0.15s cubic-bezier(0.1, 0, 0.1, 1);
+            display: flex; align-items: center; justify-content: center;
+        }
+        /* Disable custom cursor on mobile for better UX */
+        @media (pointer: coarse) { #cursor, #cursor-follower { display: none; } * { cursor: auto !important; } }
+
+        /* --- Milky Way Canvas --- */
+        #galaxy-canvas {
+            position: fixed; top: 0; left: 0; z-index: -1;
+            pointer-events: none; opacity: 0.8;
+        }
+        .nebula-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(124, 58, 237, 0.05), transparent 80%);
+            z-index: -1; pointer-events: none;
+        }
+
+        /* --- Profile Photo Top Right --- */
+        .profile-node {
+            width: 45px; height: 45px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+            transition: 0.5s ease;
+        }
+        .profile-node:hover { transform: scale(1.1) rotate(5deg); border-color: var(--nebula-purple); }
+
+        /* --- Responsive Shards --- */
+        .mission-shard {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative; overflow: hidden;
+            display: block;
+        }
+        .mission-shard:hover {
+            border-color: var(--nebula-blue);
+            background: rgba(14, 165, 233, 0.03);
+            transform: translateY(-8px);
+        }
+
+        .vertical-hud {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
             position: fixed;
-            width: 100%;
-            height: 100%;
-            background: transparent;
-            z-index: -1;
-            animation: moveStars 200s linear infinite;
+            z-index: 50;
         }
 
-        @keyframes moveStars {
-            from {background-position: 0 0;}
-            to {background-position: 0 10000px;}
-        }
+        .hero-title { font-size: clamp(2.5rem, 10vw, 10rem); line-height: 0.9; }
 
-        .stars:after {
-            content: "";
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-image: 
-            radial-gradient(2px 2px at 20px 30px, white, transparent),
-            radial-gradient(2px 2px at 200px 150px, white, transparent),
-            radial-gradient(2px 2px at 400px 250px, white, transparent),
-            radial-gradient(2px 2px at 600px 100px, white, transparent),
-            radial-gradient(2px 2px at 800px 200px, white, transparent),
-            radial-gradient(2px 2px at 1000px 300px, white, transparent);
-            background-repeat: repeat;
+        .img-container { position: relative; overflow: hidden; height: 100%; width: 100%; border-radius: 20px; }
+        .img-container img {
+            width: 100%; height: 100%; object-fit: cover;
+            opacity: 0.4; transition: 1.2s ease;
+            filter: grayscale(1);
         }
+        .mission-shard:hover img { opacity: 0.7; filter: grayscale(0); transform: scale(1.05); }
 
-        nav {
-            display: flex;
-            justify-content: space-between;
-            padding: 20px 50px;
-            position: fixed;
-            width: 100%;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(8px);
-        }
-
-        nav a {
-            color: cyan;
-            text-decoration: none;
-            margin-left: 20px;
-            font-weight: bold;
-        }
-
-        section {
-            padding: 150px 50px;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 60px;
-            color: cyan;
-            text-shadow: 0 0 20px cyan, 0 0 40px cyan;
-            animation: float 4s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0px);}
-            50% { transform: translateY(-15px);}
-            100% { transform: translateY(0px);}
-        }
-
-        h2 {
-            color: #00f7ff;
-            text-shadow: 0 0 10px #00f7ff;
-        }
-
-        .card {
-            background: rgba(255,255,255,0.05);
-            padding: 20px;
-            margin: 20px;
-            border-radius: 15px;
-            display: inline-block;
-            width: 250px;
-            backdrop-filter: blur(10px);
-            transition: 0.4s;
-        }
-
-        .card:hover {
-            transform: scale(1.08);
-            box-shadow: 0 0 25px cyan;
-        }
-
-        button {
-            padding: 12px 25px;
-            background: cyan;
-            border: none;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 0 20px cyan;
-        }
-
-        button:hover {
-            background: white;
-        }
-
-        footer {
-            padding: 20px;
-            text-align: center;
-            background: black;
-            color: gray;
-        }
+        ::-webkit-scrollbar { width: 0px; }
     </style>
 </head>
-
 <body>
 
-<div class="stars"></div>
+    <div id="cursor"></div>
+    <div id="cursor-follower"></div>
+    <canvas id="galaxy-canvas"></canvas>
+    <div class="nebula-overlay"></div>
 
-<nav>
-    <div><b>🚀 AstroOnkar</b></div>
-    <div>
-        <a href="#about">About</a>
-        <a href="#projects">Projects</a>
-        <a href="#contact">Contact</a>
-    </div>
-</nav>
+    <nav class="fixed top-0 w-full z-50 p-6 md:p-10 flex justify-between items-center mix-blend-difference">
+        <div class="font-extrabold text-xl tracking-tighter">ASTRO<span class="text-purple-400">.</span></div>
+        <div class="flex items-center gap-6">
+            <div class="hidden md:flex gap-8 text-[9px] opacity-40 uppercase tracking-widest">
+                <a href="#about" class="hover:text-purple-400 transition magnetic">Identity</a>
+                <a href="#aera" class="hover:text-purple-400 transition magnetic">Project</a>
+                <a href="#contact" class="hover:text-purple-400 transition magnetic">Contact</a>
+            </div>
+            <div class="profile-node">
+                <img src="https://qbppenfcbrszswmfmiop.supabase.co/storage/v1/object/public/images/WhatsApp%20Image%202026-03-09%20at%202.26.51%20PM.jpeg" alt="Onkar Gaikwad" class="w-full h-full object-cover">
+            </div>
+        </div>
+    </nav>
 
-<section>
-    <h1>Onkar Gaikwad</h1>
-    <p>Tech Builder | Space Explorer | Flutter Dev | Embedded Systems</p>
-    <br>
-    <button onclick="alert('Welcome Commander 🚀')">Launch Sequence</button>
-</section>
-
-<section id="about">
-    <h2>🌌 About Me</h2>
-    <p>
-        I build futuristic systems using Flutter, BLE microcontrollers,
-        networking tools, and AI concepts. Passionate about space technology
-        and next-generation robotics.
-    </p>
-</section>
-
-<section id="projects">
-    <h2>🛰️ Projects</h2>
-
-    <div class="card">
-        <h3>📡 BLE Distance System</h3>
-        <p>nRF52840 + ESP32 BLE communication project.</p>
+    <div class="hidden lg:block vertical-hud left-10 top-1/2 -translate-y-1/2 text-[8px] opacity-20 uppercase tracking-[1em]">
+        IIT_GANDHINAGAR // STATUS: MISSION_ACTIVE // 2026.sys
     </div>
 
-    <div class="card">
-        <h3>📱 Flutter Applications</h3>
-        <p>Modern animated mobile apps with backend.</p>
+    <section id="about" class="min-h-screen flex flex-col justify-center px-8 md:px-32 relative">
+        <div class="max-w-6xl floating">
+            <p class="text-purple-400 mb-6 uppercase tracking-[0.8em] text-[10px] md:text-xs">// VOYAGE_INIT_IITGN</p>
+            <h1 class="hero-title font-extrabold mb-10 md:mb-14" id="hero-title">
+                <span class="block">Onkar</span>
+                <span class="block text-transparent" style="-webkit-text-stroke: 1px rgba(255,255,255,0.2);">Gaikwad</span>
+            </h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
+                <p class="text-slate-400 text-lg md:text-xl font-light leading-relaxed max-w-lg opacity-0 hero-p floating-delayed">
+                  Undergraduate at IIT Gandhinagar, building thoughtful software and modern digital experiences with a focus on performance, design, and real-world impact.
+                </p>
+                <div class="flex flex-col justify-end opacity-0 hero-p">
+                    <div class="text-[8px] md:text-[10px] mb-4 opacity-50 uppercase tracking-[0.4em]">Astro</div>
+                    <div class="h-[1px] w-full bg-purple-500/50 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 h-full bg-purple-400 w-0" id="launch-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="aera" class="py-24 md:py-48 px-8 md:px-32 relative">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16 reveal-up">
+            <h2 class="text-5xl md:text-8xl font-extrabold tracking-tighter floating">AERA</h2>
+            <p class="text-purple-500/50 mb-2 uppercase text-[10px] tracking-widest">[Primary Deployment]</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10">
+            <a href="https://your-galexi-link.com" target="_blank" class="lg:col-span-8 mission-shard rounded-[30px] md:rounded-[50px] aspect-video relative group reveal-up tilt-card">
+                <div class="img-container">
+                    <img src="https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&q=80&w=1600" alt="Aera Interface">
+                </div>
+                <div class="absolute inset-0 p-8 md:p-12 flex flex-col justify-end floating-delayed">
+                    <div class="text-purple-400 text-[9px] mb-4 uppercase tracking-widest">// Aera Messenger</div>
+                    <h3 class="text-2xl md:text-4xl font-bold tracking-tight">Designing A Smarter Way To Connect.</h3>
+                    <p class="text-[9px] mt-4 opacity-40 uppercase tracking-[0.5em]">[Tap To Download App]</p>
+                </div>
+            </a>
+
+            <div class="lg:col-span-4 mission-shard rounded-[30px] md:rounded-[50px] p-8 md:p-12 flex flex-col justify-center reveal-up">
+
+    <div class="floating">
+
+        <h4 class="text-purple-400 mb-6 uppercase tracking-widest text-[10px]">
+            About The App
+        </h4>
+
+        <p class="text-slate-400 text-sm font-light leading-relaxed mb-8">
+            Aera Messenger is a real-time messaging application built to provide fast, reliable communication with a clean and modern interface. 
+            The app focuses on smooth user experience, secure authentication, and efficient message delivery, making conversations feel instant and effortless.
+        </p>
+
+        <div class="space-y-4 text-[10px] md:text-xs">
+
+            <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                <span class="opacity-40 uppercase">Messaging</span>
+                <span class="text-purple-400">REAL-TIME CHAT</span>
+            </div>
+
+            <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                <span class="opacity-40 uppercase">Auth</span>
+                <span class="text-purple-400">SECURE LOGIN</span>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <span class="opacity-40 uppercase">Interface</span>
+                <span class="text-purple-400">MODERN UI</span>
+            </div>
+
+        </div>
+
     </div>
 
-    <div class="card">
-        <h3>🛰 Mars Rover Concept</h3>
-        <p>AI-powered rover control prototype idea.</p>
-    </div>
+</div>
+        </div>
+    </section>
 
-    <div class="card">
-        <h3>🌐 Networking Lab</h3>
-        <p>Exploring Nmap & cybersecurity fundamentals.</p>
-    </div>
+    <section class="py-24 md:py-48 px-8 md:px-32 bg-white/[0.01]">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            <a class="mission-shard p-10 md:p-14 rounded-[30px] md:rounded-[40px] reveal-up tilt-card floating">
+                <p class="text-blue-400 mb-8 uppercase tracking-widest text-[10px]">01 // DEV</p>
+                <h4 class="text-2xl md:text-3xl font-bold mb-4">Flutter Dev</h4>
+                <p class="text-slate-400 text-sm font-light leading-relaxed">High-fidelity cross-platform apps with fluid UI/UX interactions.</p>
+            </a>
+            <a class="mission-shard p-10 md:p-14 rounded-[30px] md:rounded-[40px] reveal-up tilt-card floating-delayed" style="transition-delay: 150ms;">
+                <p class="text-purple-500 mb-8 uppercase tracking-widest text-[10px]">02 // AI</p>
+                <h4 class="text-2xl md:text-3xl font-bold mb-4">Intelligence</h4>
+                <p class="text-slate-400 text-sm font-light leading-relaxed">Python ML implementations using NumPy and Pandas for visualization.</p>
+            </a>
+            <a class="mission-shard p-10 md:p-14 rounded-[30px] md:rounded-[40px] reveal-up tilt-card floating" style="transition-delay: 300ms;">
+                <p class="text-white mb-8 uppercase tracking-widest text-[10px]">03 // PHYS</p>
+                <h4 class="text-2xl md:text-3xl font-bold mb-4">Embedded</h4>
+                <p class="text-slate-400 text-sm font-light leading-relaxed">Hardware logic via BLE and sensors for software interaction.</p>
+            </a>
+        </div>
+    </section>
 
-</section>
+    <footer id="contact" class="py-24 md:py-48 px-8 md:px-32 text-center border-t border-white/5 relative">
+        <div class="reveal-up floating">
+            <h2 class="text-5xl md:text-[10vw] font-extrabold tracking-tighter mb-20 leading-none">
+                Contact
+            </h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-12">
+                <div class="magnetic">
+                    <p class="text-slate-600 mb-3 uppercase text-[9px] tracking-widest">Instagram</p>
+                    <a href="https://www.instagram.com/_on_kar_3319/" target="_blank" class="text-sm md:text-lg font-bold hover:text-pink-400 transition">SOCIAL IDENTITY</a>
+                </div>
+                <div class="magnetic">
+                    <p class="text-slate-600 mb-3 uppercase text-[9px] tracking-widest">LinkedIn</p>
+                    <a href="https://www.linkedin.com/in/onkar-gaikwad-b64851322" target="_blank" class="text-sm md:text-lg font-bold hover:text-blue-400 transition">PROFESSIONAL NODE</a>
+                </div>
+                <div class="magnetic">
+                    <p class="text-slate-600 mb-3 uppercase text-[9px] tracking-widest">GitHub</p>
+                    <a href="https://github.com/OnkarGaikwad-astro" target="_blank" class="text-sm md:text-lg font-bold hover:text-purple-400 transition">SOURCE ARCHIVE</a>
+                </div>
+                <div class="magnetic">
+                    <p class="text-slate-600 mb-3 uppercase text-[9px] tracking-widest">Email</p>
+                    <a class="text-sm md:text-lg font-bold hover:text-cyan-400 transition">Onkargaikwad3319@gmail.com</a>
+                </div>
+                <div class="magnetic col-span-2 md:col-span-1">
+                    <p class="text-slate-600 mb-3 uppercase text-[9px] tracking-widest">Phone</p>
+                    <a class="text-sm md:text-lg font-bold hover:text-green-400 transition">8055403319</a>
+                </div>
+            </div>
+        </div>
 
-<section id="contact">
-    <h2>📬 Contact</h2>
-    <p>Email: your-email@gmail.com</p>
-    <p>GitHub: github.com/onkargaikwad-astro</p>
-</section>
+        <div class="mt-48 md:mt-64 flex flex-col md:flex-row justify-between gap-6 text-[8px] opacity-10 uppercase tracking-[1em]">
+            <span>© 2026 // ONKAR GAIKWAD</span>
+            <span>Milky Way Sector // IIT Gandhinagar Base</span>
+        </div>
+    </footer>
 
-<footer>
-    © 2026 Onkar Gaikwad | Exploring the Universe 🚀
-</footer>
+    <script>
+        // --- 1. Silk Smooth Scroll (Lenis) ---
+        const lenis = new Lenis({ duration: 1.5, smoothWheel: true });
+        function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+        requestAnimationFrame(raf);
 
+        // --- 2. Interactive HUD Cursor ---
+        const cursor = document.getElementById('cursor');
+        const follower = document.getElementById('cursor-follower');
+        window.addEventListener('mousemove', e => {
+            gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0 });
+            gsap.to(follower, { x: e.clientX - 20, y: e.clientY - 20, duration: 0.15 });
+        });
+
+        document.querySelectorAll('a, .mission-shard, .tilt-card').forEach(el => {
+            el.addEventListener('mouseenter', () => gsap.to(follower, { scale: 2, borderColor: '#7c3aed', duration: 0.3 }));
+            el.addEventListener('mouseleave', () => gsap.to(follower, { scale: 1, borderColor: 'rgba(255, 255, 255, 0.3)', duration: 0.3 }));
+        });
+
+        // --- 3. Animation Engine (GSAP) ---
+        gsap.registerPlugin(ScrollTrigger);
+
+        const tl = gsap.timeline();
+        tl.to(".hero-p", { opacity: 1, y: -20, duration: 1, stagger: 0.1, delay: 0.5 })
+          .to("#launch-bar", { width: "100%", duration: 2, ease: "power4.inOut" }, "-=1");
+
+        document.querySelectorAll('.reveal-up').forEach((el) => {
+            gsap.from(el, {
+                scrollTrigger: { trigger: el, start: "top 95%" },
+                y: 50, opacity: 0, duration: 1.2, ease: "power2.out"
+            });
+        });
+
+        document.querySelectorAll('.magnetic').forEach(el => {
+            el.addEventListener('mousemove', e => {
+                const rect = el.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width/2;
+                const y = e.clientY - rect.top - rect.height/2;
+                gsap.to(el, { x: x * 0.4, y: y * 0.4, duration: 0.3 });
+            });
+            el.addEventListener('mouseleave', () => gsap.to(el, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" }));
+        });
+
+        // --- 4. 3D Tilt (Desktop only) ---
+        if (window.innerWidth > 1024) {
+            document.querySelectorAll('.tilt-card').forEach(card => {
+                card.addEventListener('mousemove', e => {
+                    const rect = card.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) / rect.width - 0.5;
+                    const y = (e.clientY - rect.top) / rect.height - 0.5;
+                    gsap.to(card, { rotationY: x * 15, rotationX: -y * 15, transformPerspective: 1000, duration: 0.4 });
+                });
+                card.addEventListener('mouseleave', () => gsap.to(card, { rotationY: 0, rotationX: 0, duration: 0.6 }));
+            });
+        }
+
+        // --- 5. Milky Way Galaxy Engine ---
+        const canvas = document.getElementById('galaxy-canvas');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+        function initGalaxy() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            stars = Array.from({length: window.innerWidth < 768 ? 400 : 800}, () => {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * canvas.width * 0.6;
+                const spiral = radius * 0.5;
+                return {
+                    x: radius * Math.cos(angle + spiral),
+                    y: radius * Math.sin(angle + spiral),
+                    size: Math.random() * 1.2,
+                    opacity: Math.random(),
+                    speed: 0.001 + Math.random() * 0.002
+                };
+            });
+        }
+        function drawGalaxy() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            stars.forEach(s => {
+                const x = s.x + cx;
+                const y = s.y + cy;
+                ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
+                if (Math.abs(lenis.velocity) > 5) {
+                    ctx.strokeStyle = `rgba(14, 165, 233, ${s.opacity * 0.4})`;
+                    ctx.lineWidth = s.size;
+                    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + (lenis.velocity * 0.5)); ctx.stroke();
+                }
+                ctx.beginPath(); ctx.arc(x, y, s.size, 0, Math.PI * 2); ctx.fill();
+                const angle = Math.atan2(s.y, s.x) + (s.speed * (1 + Math.abs(lenis.velocity) * 0.1));
+                const radius = Math.sqrt(s.x * s.x + s.y * s.y);
+                s.x = radius * Math.cos(angle); s.y = radius * Math.sin(angle);
+            });
+            requestAnimationFrame(drawGalaxy);
+        }
+        window.addEventListener('resize', initGalaxy);
+        initGalaxy();
+        drawGalaxy();
+    </script>
 </body>
 </html>
