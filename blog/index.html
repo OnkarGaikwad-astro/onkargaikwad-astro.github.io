@@ -3,159 +3,719 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cosmic Blog</title>
-
+<title>Cosmosink — Dispatches from the Deep Universe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap">
 <style>
-    body {
-        margin: 0;
-        font-family: 'Segoe UI', sans-serif;
-        background: radial-gradient(circle at top, #0b0f2b, #02010a);
-        color: white;
-        overflow-x: hidden;
-    }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* STAR FIELD */
-    body::before {
-        content: "";
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        background: url('https://www.transparenttextures.com/patterns/stardust.png');
-        opacity: 0.4;
-        z-index: -1;
-    }
+  :root {
+    --accent: #a78bfa;
+    --accent2: #67e8f9;
+    --bg: #04040f;
+    --text: #e8e4ff;
+    --muted: rgba(232,228,255,0.48);
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --body: 'Lora', Georgia, serif;
+    --mono: 'Space Mono', monospace;
+  }
 
-    header {
-        text-align: center;
-        padding: 100px 20px;
-        background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
-    }
+  html { scroll-behavior: smooth; }
 
-    header h1 {
-        font-size: 3.5rem;
-        letter-spacing: 3px;
-        text-shadow: 0 0 20px cyan;
-    }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
 
-    header p {
-        opacity: 0.8;
-        font-size: 1.2rem;
-    }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.4); border-radius: 2px; }
 
-    .container {
-        width: 90%;
-        max-width: 1000px;
-        margin: auto;
-    }
+  /* ── CANVAS STARS ── */
+  #stars {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    z-index: 0; pointer-events: none;
+  }
 
-    .card {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        margin: 40px 0;
-        overflow: hidden;
-        box-shadow: 0 0 25px rgba(0,255,255,0.2);
-        transition: transform 0.4s ease, box-shadow 0.4s ease;
-    }
+  /* ── NEBULA BLOBS ── */
+  .neb {
+    position: fixed; border-radius: 50%;
+    pointer-events: none; z-index: 0; filter: blur(70px);
+  }
+  .neb-1 {
+    top: 5%; left: 2%; width: 520px; height: 520px;
+    background: radial-gradient(circle, rgba(124,58,237,0.13) 0%, transparent 70%);
+    animation: neb1 20s ease-in-out infinite alternate;
+  }
+  .neb-2 {
+    top: 40%; right: -3%; width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(8,145,178,0.09) 0%, transparent 70%);
+    animation: neb2 25s ease-in-out infinite alternate;
+  }
+  .neb-3 {
+    bottom: 5%; left: 25%; width: 420px; height: 420px;
+    background: radial-gradient(circle, rgba(232,121,249,0.08) 0%, transparent 70%);
+    animation: neb3 30s ease-in-out infinite alternate;
+  }
 
-    .card:hover {
-        transform: translateY(-10px) scale(1.02);
-        box-shadow: 0 0 40px rgba(0,255,255,0.5);
-    }
+  @keyframes neb1 { to { transform: translate(70px, 50px) scale(1.12); } }
+  @keyframes neb2 { to { transform: translate(-60px, 70px); } }
+  @keyframes neb3 { to { transform: translate(50px, -60px) scale(1.18); } }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(26px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes shimmer { 0%,100% { opacity:.35; } 50% { opacity:1; } }
+  @keyframes pulse { 0%,100% { box-shadow:0 0 12px rgba(167,139,250,.6); } 50% { box-shadow:0 0 24px rgba(167,139,250,1); } }
+  @keyframes gradShift { 0% { background-position:0% 50%; } 50% { background-position:100% 50%; } 100% { background-position:0% 50%; } }
 
-    .card img {
-        width: 100%;
-        height: 300px;
-        object-fit: cover;
-    }
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 200;
+    padding: 0 40px;
+    border-bottom: 1px solid transparent;
+    transition: background .4s, backdrop-filter .4s, border-color .4s;
+  }
+  nav.scrolled {
+    background: rgba(4,4,15,0.88);
+    backdrop-filter: blur(22px);
+    border-bottom-color: rgba(167,139,250,0.12);
+  }
+  .nav-inner {
+    max-width: 1160px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--serif); font-size: 22px; font-weight: 600;
+    letter-spacing: .04em; text-decoration: none; color: var(--text);
+  }
+  .logo-orb {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    background: radial-gradient(circle at 35% 35%, #c4b5fd, #7c3aed 60%, #1a0040);
+    animation: pulse 3s ease-in-out infinite;
+  }
+  .logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 30px; }
+  .nav-links a {
+    font-size: 12px; color: var(--muted); text-decoration: none;
+    font-family: var(--mono); letter-spacing: .08em;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .live {
+    font-size: 11px; font-family: var(--mono);
+    color: rgba(232,228,255,0.28); letter-spacing: .1em;
+    animation: shimmer 3s ease-in-out infinite;
+  }
 
-    .card-content {
-        padding: 20px;
-    }
+  /* ── HERO ── */
+  header {
+    position: relative; z-index: 1;
+    text-align: center; padding: 80px 40px 52px;
+    animation: fadeUp .9s ease both;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: rgba(167,139,250,0.1);
+    border: 1px solid rgba(167,139,250,0.28);
+    border-radius: 100px; padding: 5px 20px;
+    font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 26px; font-family: var(--mono);
+  }
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(48px, 8vw, 90px);
+    font-weight: 600; line-height: 1.05;
+    margin: 0 auto 22px; max-width: 860px;
+    background: linear-gradient(135deg, #ffffff 0%, #c4b5fd 45%, #67e8f9 100%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradShift 8s ease infinite;
+  }
+  .hero-sub {
+    font-size: 17px; color: rgba(200,195,240,0.58);
+    max-width: 460px; margin: 0 auto; line-height: 1.74;
+  }
 
-    .card-content h2 {
-        margin: 0;
-        color: cyan;
-    }
+  /* ── SEARCH BAR ── */
+  .search-wrap {
+    position: relative; z-index: 1;
+    display: flex; justify-content: center;
+    padding: 28px 40px 0;
+    animation: fadeUp .9s .1s ease both;
+  }
+  .search-input {
+    width: 100%; max-width: 440px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(167,139,250,0.22);
+    border-radius: 100px; padding: 11px 22px 11px 44px;
+    color: var(--text); font-family: var(--mono); font-size: 13px;
+    outline: none; transition: border-color .3s, background .3s;
+  }
+  .search-input::placeholder { color: rgba(232,228,255,0.3); }
+  .search-input:focus {
+    border-color: rgba(167,139,250,0.55);
+    background: rgba(255,255,255,0.08);
+  }
+  .search-icon {
+    position: absolute; left: calc(50% - 196px); top: 50%;
+    transform: translateY(-50%);
+    color: rgba(167,139,250,0.5); pointer-events: none;
+  }
 
-    .card-content p {
-        opacity: 0.85;
-        line-height: 1.6;
-    }
+  /* ── CATEGORY FILTERS ── */
+  .cats {
+    position: relative; z-index: 1;
+    display: flex; gap: 8px; justify-content: center;
+    padding: 28px 40px 44px; flex-wrap: wrap;
+    animation: fadeUp .9s .15s ease both;
+  }
+  .cat-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px; padding: 7px 18px;
+    font-size: 11px; color: var(--muted); cursor: pointer;
+    font-family: var(--mono); letter-spacing: .08em;
+    transition: all .22s; outline: none;
+  }
+  .cat-btn:hover {
+    background: rgba(167,139,250,0.1);
+    border-color: rgba(167,139,250,0.3);
+    color: rgba(196,181,253,0.9);
+  }
+  .cat-btn.active {
+    background: rgba(167,139,250,0.18);
+    border-color: rgba(167,139,250,0.52);
+    color: #c4b5fd;
+  }
 
-    footer {
-        text-align: center;
-        padding: 30px;
-        opacity: 0.6;
-    }
+  /* ── GRID ── */
+  main {
+    position: relative; z-index: 1;
+    max-width: 1160px; margin: 0 auto;
+    padding: 0 40px 80px;
+    animation: fadeUp .9s .22s ease both;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
 
-    /* FLOATING PLANET */
-    .planet {
-        position: fixed;
-        width: 120px;
-        right: 30px;
-        bottom: 30px;
-        animation: float 6s ease-in-out infinite;
-        filter: drop-shadow(0 0 15px cyan);
-    }
+  /* ── CARDS ── */
+  .card {
+    border-radius: 18px; overflow: hidden;
+    position: relative; cursor: pointer;
+    display: flex; flex-direction: column;
+    transition: transform .38s cubic-bezier(.22,.68,0,1.2),
+                box-shadow .38s ease, border-color .3s;
+  }
+  .card:hover { transform: translateY(-6px) scale(1.012); }
 
-    @keyframes float {
-        0%,100% { transform: translateY(0); }
-        50% { transform: translateY(-20px); }
-    }
+  .card-featured { grid-column: 1 / -1; }
+
+  .card-orb {
+    position: absolute; border-radius: 50%;
+    pointer-events: none; transition: opacity .35s;
+    opacity: .52;
+  }
+  .card:hover .card-orb { opacity: 1; }
+
+  .card-body { position: relative; flex: 1; padding: 30px 30px 24px; }
+  .card-footer {
+    position: relative;
+    padding: 14px 30px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  .badge {
+    display: inline-block; border-radius: 100px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: .13em; text-transform: uppercase;
+    padding: 3px 12px; font-family: var(--mono);
+  }
+  .badge-cat {
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.45);
+    border-radius: 100px; font-size: 10px;
+    letter-spacing: .1em; text-transform: uppercase;
+    padding: 3px 11px; font-family: var(--mono);
+  }
+
+  .card-title {
+    font-family: var(--serif); font-weight: 600;
+    color: #fff; line-height: 1.28; margin: 14px 0 12px;
+  }
+  .card-excerpt {
+    font-size: 14px; line-height: 1.72;
+    color: rgba(210,205,240,0.62);
+  }
+  .card-meta {
+    font-size: 11px; color: rgba(255,255,255,0.3);
+    font-family: var(--mono);
+  }
+  .read-link {
+    font-size: 12px; font-weight: 700;
+    font-family: var(--mono); letter-spacing: .06em;
+    display: flex; align-items: center; gap: 5px;
+    opacity: 0; transition: opacity .2s;
+  }
+  .card:hover .read-link { opacity: 1; }
+
+  /* featured overrides */
+  .card-featured .card-title {
+    font-size: clamp(28px, 3.6vw, 46px);
+    margin-bottom: 18px; max-width: 680px;
+  }
+  .card-featured .card-excerpt {
+    font-size: 16px; max-width: 560px; margin-bottom: 30px;
+  }
+  .card-featured .read-link {
+    font-size: 14px; margin-left: auto; opacity: 0;
+  }
+  .card-featured .card-footer { display: none; }
+  .card-featured .card-meta-row {
+    display: flex; align-items: center; gap: 16px;
+  }
+  .dot { width:3px; height:3px; border-radius:50%; background:rgba(255,255,255,0.2); }
+
+  /* ── EMPTY STATE ── */
+  .empty {
+    grid-column: 1/-1; text-align: center;
+    padding: 80px 0;
+    color: rgba(232,228,255,0.28);
+    font-family: var(--mono); font-size: 13px; letter-spacing: .08em;
+  }
+
+  /* ── NEWSLETTER STRIP ── */
+  .newsletter {
+    position: relative; z-index: 1;
+    max-width: 1160px; margin: 0 auto 60px;
+    padding: 0 40px;
+  }
+  .newsletter-inner {
+    border-radius: 20px;
+    background: linear-gradient(135deg, #0d0021 0%, #1a0040 50%, #0a1a30 100%);
+    border: 1px solid rgba(167,139,250,0.2);
+    padding: 44px 52px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 32px; flex-wrap: wrap;
+    position: relative; overflow: hidden;
+  }
+  .newsletter-orb {
+    position: absolute; top: -60px; right: -60px;
+    width: 300px; height: 300px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,58,237,0.3) 0%, transparent 70%);
+    filter: blur(40px); pointer-events: none;
+  }
+  .newsletter h2 {
+    font-family: var(--serif); font-size: 32px; font-weight: 600;
+    color: #fff; position: relative;
+  }
+  .newsletter p {
+    font-size: 14px; color: rgba(200,195,240,0.6); margin-top: 6px;
+    position: relative;
+  }
+  .newsletter-form {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    position: relative;
+  }
+  .nl-input {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(167,139,250,0.25);
+    border-radius: 100px; padding: 11px 22px;
+    color: var(--text); font-family: var(--mono); font-size: 13px;
+    outline: none; width: 240px;
+    transition: border-color .3s;
+  }
+  .nl-input::placeholder { color: rgba(232,228,255,0.3); }
+  .nl-input:focus { border-color: rgba(167,139,250,0.6); }
+  .nl-btn {
+    background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    border: none; border-radius: 100px; padding: 11px 26px;
+    color: #fff; font-family: var(--mono); font-size: 12px;
+    font-weight: 700; letter-spacing: .08em; cursor: pointer;
+    transition: opacity .2s, transform .2s;
+  }
+  .nl-btn:hover { opacity: .88; transform: scale(1.03); }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative; z-index: 1;
+    border-top: 1px solid rgba(167,139,250,0.1);
+    padding: 32px 40px;
+  }
+  .foot-inner {
+    max-width: 1160px; margin: 0 auto;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .foot-logo {
+    font-family: var(--serif); font-size: 20px;
+    font-weight: 600; color: var(--accent);
+  }
+  .foot-logo span { color: rgba(255,255,255,0.35); }
+  .foot-links { display: flex; gap: 24px; }
+  .foot-links a {
+    font-size: 12px; color: rgba(232,228,255,0.35);
+    text-decoration: none; font-family: var(--mono);
+    transition: color .2s;
+  }
+  .foot-links a:hover { color: var(--accent); }
+  .foot-copy {
+    font-family: var(--mono); font-size: 10px;
+    color: rgba(232,228,255,0.2); letter-spacing: .08em;
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal { opacity: 0; transform: translateY(22px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 640px) {
+    nav { padding: 0 20px; }
+    header { padding: 56px 20px 36px; }
+    main { padding: 0 20px 60px; }
+    .cats { padding: 20px 20px 36px; }
+    .newsletter { padding: 0 20px; }
+    .newsletter-inner { padding: 28px 24px; }
+    footer { padding: 28px 20px; }
+    .search-icon { left: calc(50% - 176px); }
+  }
 </style>
-
 </head>
-
 <body>
 
+<canvas id="stars"></canvas>
+<div class="neb neb-1"></div>
+<div class="neb neb-2"></div>
+<div class="neb neb-3"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <div class="logo-orb"></div>
+      Cosmos<span>ink</span>
+    </a>
+    <div class="nav-links">
+      <a href="#">Home</a>
+      <a href="#">Explore</a>
+      <a href="#">Missions</a>
+      <a href="#">About</a>
+    </div>
+    <div class="live">◎ LIVE</div>
+  </div>
+</nav>
+
+<!-- HERO -->
 <header>
-    <h1>🌌 Cosmic Chronicles</h1>
-    <p>Exploring the universe, one star at a time</p>
+  <div class="hero-tag">✦ Space · Science · Wonder</div>
+  <h1>Dispatches from<br>the Deep Universe</h1>
+  <p class="hero-sub">Science journalism at the frontier — from quantum cosmology to the next generation of human spaceflight.</p>
 </header>
 
-<div class="container">
-
-    <div class="card">
-        <img src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa">
-        <div class="card-content">
-            <h2>The Infinite Universe</h2>
-            <p>
-                Space is not empty—it hums with energy, mystery, and endless expansion.
-                Every galaxy is a story, every star a burning question waiting to be answered.
-            </p>
-        </div>
-    </div>
-
-    <div class="card">
-        <img src="https://images.unsplash.com/photo-1462331940025-496dfbfc7564">
-        <div class="card-content">
-            <h2>Black Holes</h2>
-            <p>
-                These cosmic whirlpools devour light itself. What lies beyond their event horizon?
-                Physics trembles at the edge of their secrets.
-            </p>
-        </div>
-    </div>
-
-    <div class="card">
-        <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa">
-        <div class="card-content">
-            <h2>Journey to Mars</h2>
-            <p>
-                Humanity stands at the brink of becoming interplanetary.
-                Mars is no longer a dream—it's the next chapter.
-            </p>
-        </div>
-    </div>
-
+<!-- SEARCH -->
+<div class="search-wrap">
+  <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.3"/>
+    <path d="M10 10l3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+  </svg>
+  <input class="search-input" id="searchInput" type="text" placeholder="Search articles…" oninput="renderPosts()">
 </div>
 
+<!-- CATEGORIES -->
+<div class="cats" id="cats">
+  <button class="cat-btn active" onclick="setCategory('All', this)">All</button>
+  <button class="cat-btn" onclick="setCategory('Cosmology', this)">Cosmology</button>
+  <button class="cat-btn" onclick="setCategory('Missions', this)">Missions</button>
+  <button class="cat-btn" onclick="setCategory('Exoplanets', this)">Exoplanets</button>
+  <button class="cat-btn" onclick="setCategory('Physics', this)">Physics</button>
+  <button class="cat-btn" onclick="setCategory('Black Holes', this)">Black Holes</button>
+  <button class="cat-btn" onclick="setCategory('Solar System', this)">Solar System</button>
+</div>
+
+<!-- POSTS -->
+<main>
+  <div class="grid" id="grid"></div>
+</main>
+
+<!-- NEWSLETTER -->
+<section class="newsletter reveal">
+  <div class="newsletter-inner">
+    <div class="newsletter-orb"></div>
+    <div>
+      <h2>Stay at the edge of discovery</h2>
+      <p>Weekly briefings on the biggest stories from across the cosmos.</p>
+    </div>
+    <div class="newsletter-form">
+      <input class="nl-input" type="email" placeholder="your@email.com">
+      <button class="nl-btn">SUBSCRIBE →</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
 <footer>
-    ✨ Made with stardust and curiosity
+  <div class="foot-inner">
+    <div class="foot-logo">Cosmos<span>ink</span></div>
+    <div class="foot-links">
+      <a href="#">Privacy</a>
+      <a href="#">Archives</a>
+      <a href="#">RSS</a>
+      <a href="#">Contact</a>
+    </div>
+    <div class="foot-copy">© 2026 · All rights reserved across the observable universe</div>
+  </div>
 </footer>
 
-<img class="planet" src="https://cdn-icons-png.flaticon.com/512/3212/3212608.png">
+<script>
+const POSTS = [
+  {
+    id: 1, category: "Cosmology", tag: "Featured",
+    title: "The Fabric of Space-Time: How Gravity Bends Light Across the Universe",
+    excerpt: "Einstein's general relativity predicted that massive objects warp spacetime itself, creating gravitational lensing — a cosmic magnifying glass visible across billions of light-years. New observations from the Euclid telescope are testing this theory at unprecedented scales.",
+    date: "April 14, 2026", readTime: "8 min",
+    grad: "linear-gradient(135deg,#0d0021 0%,#1a0040 40%,#2e0070 100%)",
+    accent: "#a78bfa", glow: "rgba(167,139,250,.38)", orb: "rgba(124,58,237,.55)"
+  },
+  {
+    id: 2, category: "Missions", tag: "Breaking",
+    title: "Artemis V Crew Completes Historic Lunar South Pole Survey",
+    excerpt: "Astronauts returned with 47kg of ice core samples from Shackleton Crater, potentially unlocking secrets about water delivery to the inner solar system during the Late Heavy Bombardment.",
+    date: "April 10, 2026", readTime: "5 min",
+    grad: "linear-gradient(135deg,#001a2e 0%,#003d6b 50%,#0077b6 100%)",
+    accent: "#38bdf8", glow: "rgba(56,189,248,.3)", orb: "rgba(2,132,199,.55)"
+  },
+  {
+    id: 3, category: "Exoplanets", tag: "Research",
+    title: "Kepler-452c Shows Biosignature Candidates in Atmospheric Spectra",
+    excerpt: "Webb telescope's latest spectroscopic analysis reveals methane and oxygen co-existing in quantities that defy purely geological explanations. Scientists urge caution but acknowledge the results are extraordinary.",
+    date: "April 8, 2026", readTime: "11 min",
+    grad: "linear-gradient(135deg,#001a0a 0%,#003319 50%,#006633 100%)",
+    accent: "#4ade80", glow: "rgba(74,222,128,.3)", orb: "rgba(22,163,74,.55)"
+  },
+  {
+    id: 4, category: "Physics", tag: "Theory",
+    title: "Dark Energy Tension: New Surveys Deepen the Hubble Crisis",
+    excerpt: "Competing measurements of the universe's expansion rate now diverge at 5-sigma significance — a statistical threshold that has historically demanded new physics. Two major survey teams released conflicting results this week.",
+    date: "April 6, 2026", readTime: "9 min",
+    grad: "linear-gradient(135deg,#1a0a00 0%,#3d1a00 50%,#7c3700 100%)",
+    accent: "#fb923c", glow: "rgba(251,146,60,.3)", orb: "rgba(194,65,12,.55)"
+  },
+  {
+    id: 5, category: "Black Holes", tag: "Discovery",
+    title: "Intermediate-Mass Black Hole Caught Mid-Merger in Dwarf Galaxy",
+    excerpt: "For the first time, astronomers observed two mid-weight black holes coalescing, producing gravitational waves detectable by LISA's prototype array and a multi-wavelength electromagnetic counterpart.",
+    date: "April 3, 2026", readTime: "7 min",
+    grad: "linear-gradient(135deg,#0a001a 0%,#1a0033 50%,#33004d 100%)",
+    accent: "#e879f9", glow: "rgba(232,121,249,.3)", orb: "rgba(147,51,234,.55)"
+  },
+  {
+    id: 6, category: "Solar System", tag: "Observations",
+    title: "Europa Clipper Detects Active Plume Eruption Near Pwyll Crater",
+    excerpt: "The spacecraft's magnetometer and mass spectrometer jointly confirmed a 200km-tall water vapor eruption, directly sampling Europa's subsurface ocean and detecting complex organic molecules.",
+    date: "March 31, 2026", readTime: "6 min",
+    grad: "linear-gradient(135deg,#00101a 0%,#002033 50%,#004d7a 100%)",
+    accent: "#67e8f9", glow: "rgba(103,232,249,.3)", orb: "rgba(8,145,178,.55)"
+  },
+  {
+    id: 7, category: "Cosmology", tag: "Analysis",
+    title: "The Cosmic Web in 3D: How Filaments Feed Galaxy Clusters",
+    excerpt: "A landmark simulation spanning 500 million light-years reveals the intricate threads of dark matter that channel gas and galaxies toward the densest nodes of the large-scale structure of the universe.",
+    date: "March 28, 2026", readTime: "10 min",
+    grad: "linear-gradient(135deg,#0a0020 0%,#1a0050 50%,#240060 100%)",
+    accent: "#c084fc", glow: "rgba(192,132,252,.3)", orb: "rgba(109,40,217,.55)"
+  },
+  {
+    id: 8, category: "Missions", tag: "Launch",
+    title: "India's Mangalyaan-3 Deploys Surface Seismometer on Mars",
+    excerpt: "ISRO's third Mars mission successfully landed near Hellas Planitia, deploying a seismometer that detected its first marsquake within 48 hours of activation.",
+    date: "March 25, 2026", readTime: "4 min",
+    grad: "linear-gradient(135deg,#1a0500 0%,#401200 50%,#802500 100%)",
+    accent: "#fca5a5", glow: "rgba(252,165,165,.3)", orb: "rgba(185,28,28,.55)"
+  },
+  {
+    id: 9, category: "Physics", tag: "Breakthrough",
+    title: "Quantum Gravity Signal Detected in Neutron Star Merger Echoes",
+    excerpt: "Post-merger oscillation frequencies from GW260312 contain a subtle imprint that two competing quantum gravity models predicted — and only one of them correctly described the data.",
+    date: "March 22, 2026", readTime: "12 min",
+    grad: "linear-gradient(135deg,#001020 0%,#002040 50%,#003870 100%)",
+    accent: "#7dd3fc", glow: "rgba(125,211,252,.3)", orb: "rgba(3,105,161,.55)"
+  }
+];
 
+let currentCat = "All";
+
+function setCategory(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderPosts();
+}
+
+function renderPosts() {
+  const query = document.getElementById("searchInput").value.toLowerCase();
+  let posts = currentCat === "All" ? POSTS : POSTS.filter(p => p.category === currentCat);
+  if (query) posts = posts.filter(p =>
+    p.title.toLowerCase().includes(query) ||
+    p.excerpt.toLowerCase().includes(query) ||
+    p.category.toLowerCase().includes(query)
+  );
+
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+
+  if (!posts.length) {
+    grid.innerHTML = '<p class="empty">No articles found. Try a different search or category.</p>';
+    return;
+  }
+
+  posts.forEach((p, i) => {
+    const featured = i === 0;
+    const card = document.createElement("div");
+    card.className = "card reveal" + (featured ? " card-featured" : "");
+    card.style.cssText = `background:${p.grad};border:1px solid ${p.accent}28;box-shadow:0 5px 24px rgba(0,0,0,.45)`;
+
+    card.addEventListener("mouseenter", () => {
+      card.style.boxShadow = `0 22px 54px ${p.glow}, 0 0 0 1px ${p.accent}55`;
+    });
+    card.addEventListener("mouseleave", () => {
+      card.style.boxShadow = "0 5px 24px rgba(0,0,0,.45)";
+    });
+
+    if (featured) {
+      card.innerHTML = `
+        <div class="card-orb" style="top:-80px;right:-80px;width:380px;height:380px;background:radial-gradient(circle,${p.orb} 0%,transparent 70%);filter:blur(50px)"></div>
+        <div class="card-body">
+          <div style="display:flex;gap:10px;margin-bottom:22px;align-items:center;flex-wrap:wrap">
+            <span class="badge" style="background:${p.accent}22;color:${p.accent};border:1px solid ${p.accent}44">${p.tag}</span>
+            <span class="badge-cat">${p.category}</span>
+          </div>
+          <h2 class="card-title" style="text-shadow:0 0 40px ${p.accent}44">${p.title}</h2>
+          <p class="card-excerpt">${p.excerpt}</p>
+          <div class="card-meta-row">
+            <span class="card-meta">${p.date}</span>
+            <div class="dot"></div>
+            <span class="card-meta">${p.readTime} read</span>
+            <span class="read-link" style="color:${p.accent}">Read Article <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="${p.accent}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </div>`;
+    } else {
+      card.innerHTML = `
+        <div class="card-orb" style="top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(circle,${p.orb} 0%,transparent 70%);filter:blur(30px)"></div>
+        <div class="card-body">
+          <span class="badge" style="background:${p.accent}1a;color:${p.accent};border:1px solid ${p.accent}44">${p.category}</span>
+          <h3 class="card-title" style="font-size:21px">${p.title}</h3>
+          <p class="card-excerpt">${p.excerpt}</p>
+        </div>
+        <div class="card-footer" style="border-top:1px solid ${p.accent}1a">
+          <span class="card-meta">${p.date} · ${p.readTime} read</span>
+          <span class="read-link" style="color:${p.accent}">Read →</span>
+        </div>`;
+    }
+
+    card.style.animationDelay = `${i * 0.06}s`;
+    grid.appendChild(card);
+    requestAnimationFrame(() => requestAnimationFrame(() => card.classList.add("visible")));
+  });
+}
+
+renderPosts();
+
+/* ── STICKY NAV ── */
+window.addEventListener("scroll", () => {
+  document.getElementById("nav").classList.toggle("scrolled", window.scrollY > 12);
+});
+
+/* ── SCROLL REVEAL ── */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("visible"); });
+}, { threshold: 0.12 });
+document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+
+/* ── STARFIELD ── */
+(function () {
+  const canvas = document.getElementById("stars");
+  const ctx = canvas.getContext("2d");
+  const stars = [];
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener("resize", resize);
+
+  for (let i = 0; i < 320; i++) {
+    stars.push({
+      x: Math.random(), y: Math.random(),
+      r: Math.random() * 1.5 + 0.15,
+      op: Math.random() * 0.75 + 0.25,
+      tw: Math.random() * Math.PI * 2,
+      ts: Math.random() * 0.018 + 0.004,
+    });
+  }
+
+  /* shooting stars */
+  const shoots = [];
+  function spawnShoot() {
+    if (Math.random() < 0.4) {
+      shoots.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height * 0.5,
+        len: 90 + Math.random() * 80,
+        speed: 8 + Math.random() * 6,
+        angle: Math.PI / 5 + Math.random() * 0.2,
+        life: 1
+      });
+    }
+    setTimeout(spawnShoot, 2400 + Math.random() * 3000);
+  }
+  spawnShoot();
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    /* static stars */
+    stars.forEach(s => {
+      s.tw += s.ts;
+      const o = s.op * (0.5 + 0.5 * Math.sin(s.tw));
+      ctx.beginPath();
+      ctx.arc(s.x * canvas.width, s.y * canvas.height, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${o})`;
+      ctx.fill();
+    });
+
+    /* shooting stars */
+    for (let i = shoots.length - 1; i >= 0; i--) {
+      const s = shoots[i];
+      s.x += Math.cos(s.angle) * s.speed;
+      s.y += Math.sin(s.angle) * s.speed;
+      s.life -= 0.025;
+      if (s.life <= 0) { shoots.splice(i, 1); continue; }
+      const grad = ctx.createLinearGradient(
+        s.x, s.y,
+        s.x - Math.cos(s.angle) * s.len,
+        s.y - Math.sin(s.angle) * s.len
+      );
+      grad.addColorStop(0, `rgba(255,255,255,${s.life * 0.9})`);
+      grad.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(s.x - Math.cos(s.angle) * s.len, s.y - Math.sin(s.angle) * s.len);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
 </body>
 </html>
