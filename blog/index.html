@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta charset="UTF-8">
 <title>Cosmic Logs</title>
 
@@ -8,131 +9,169 @@
 
 <style>
   body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: radial-gradient(circle at top, #020617, #000);
-    color: white;
-    overflow-x: hidden;
-  }
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at top, #020617, #000);
+  color: white;
+  overflow-x: hidden;
+}
 
-  /* 🌌 MULTI-LAYER STARS */
-  body::before, body::after {
-    content: "";
-    position: fixed;
-    width: 200%;
-    height: 200%;
-    background: url('https://www.transparenttextures.com/patterns/stardust.png');
-    animation: moveStars 120s linear infinite;
-    opacity: 0.15;
-  }
+/* 🌌 STAR LAYERS */
+body::before, body::after {
+  content: "";
+  position: fixed;
+  width: 200%;
+  height: 200%;
+  background: url('https://www.transparenttextures.com/patterns/stardust.png');
+  animation: moveStars 120s linear infinite;
+  opacity: 0.15;
+}
 
-  body::after {
-    animation-duration: 200s;
-    opacity: 0.08;
-  }
+body::after {
+  animation-duration: 200s;
+  opacity: 0.08;
+}
 
-  @keyframes moveStars {
-    from { transform: translate(0,0); }
-    to { transform: translate(-800px,-800px); }
-  }
+@keyframes moveStars {
+  from { transform: translate(0,0); }
+  to { transform: translate(-800px,-800px); }
+}
 
-  header {
-    text-align: center;
-    padding: 30px;
-    font-size: 34px;
-    letter-spacing: 4px;
-    font-weight: bold;
-    background: linear-gradient(90deg, #38bdf8, #6366f1);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+/* 🧠 HEADER */
+header {
+  text-align: center;
+  padding: 20px;
+  font-size: clamp(22px, 5vw, 34px);
+  letter-spacing: 2px;
+  font-weight: bold;
+  background: linear-gradient(90deg, #38bdf8, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 
+/* 📦 CONTAINER */
+.container {
+  max-width: 850px;
+  margin: auto;
+  padding: 15px;
+}
+
+/* 🧊 GLASS */
+.glass {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(15px);
+  padding: 18px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 0 25px rgba(56,189,248,0.08);
+}
+
+/* ✍️ INPUTS */
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 10px;
+  outline: none;
+  background: rgba(255,255,255,0.08);
+  color: white;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+input:focus, textarea:focus {
+  background: rgba(255,255,255,0.12);
+  box-shadow: 0 0 10px #38bdf8;
+}
+
+/* 🔘 BUTTON */
+button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(45deg, #38bdf8, #6366f1);
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  font-size: 15px;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 12px #38bdf8;
+}
+
+/* 🪐 POSTS */
+.post {
+  margin-top: 15px;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  animation: fadeUp 0.4s ease;
+  transition: 0.3s;
+}
+
+.post:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 20px rgba(99,102,241,0.2);
+}
+
+.post h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #38bdf8;
+}
+
+.post small {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.post p {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 📱 MOBILE EXTRA TUNING */
+@media (max-width: 480px) {
   .container {
-    max-width: 850px;
-    margin: auto;
-    padding: 20px;
+    padding: 12px;
   }
 
-  /* 🧊 GLASS PANEL */
   .glass {
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(15px);
-    padding: 25px;
-    border-radius: 20px;
-    margin-bottom: 25px;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 0 40px rgba(56,189,248,0.1);
+    padding: 15px;
   }
 
   input, textarea {
-    width: 100%;
-    padding: 12px;
-    margin-top: 12px;
-    border: none;
-    border-radius: 10px;
-    outline: none;
-    background: rgba(255,255,255,0.08);
-    color: white;
-    transition: 0.3s;
+    font-size: 16px; /* prevents zoom on iOS */
   }
 
-  input:focus, textarea:focus {
-    background: rgba(255,255,255,0.12);
-    box-shadow: 0 0 10px #38bdf8;
-  }
-
-  button {
-    margin-top: 15px;
-    padding: 12px 18px;
-    border: none;
-    border-radius: 12px;
-    background: linear-gradient(45deg, #38bdf8, #6366f1);
-    cursor: pointer;
-    color: white;
-    font-weight: bold;
-    transition: 0.3s;
-  }
-
-  button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 15px #38bdf8;
-  }
-
-  /* 🪐 POSTS */
   .post {
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 15px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    animation: fadeUp 0.5s ease;
-    transition: 0.3s;
+    padding: 14px;
   }
-
-  .post:hover {
-    transform: translateY(-5px) scale(1.01);
-    box-shadow: 0 0 25px rgba(99,102,241,0.2);
-  }
-
-  .post h3 {
-    margin: 0;
-    color: #38bdf8;
-  }
-
-  .post small {
-    opacity: 0.6;
-  }
-
-  @keyframes fadeUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+}
 
 </style>
 </head>
