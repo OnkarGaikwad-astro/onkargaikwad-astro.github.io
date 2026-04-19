@@ -119,7 +119,7 @@
       return;
     }
 
-    await client.from('Blog').insert([{ title, content }]);
+    await client.from('blogs').insert([{ title, content }]);
 
     document.getElementById("title").value = "";
     document.getElementById("content").value = "";
@@ -129,7 +129,7 @@
 
   async function loadPosts() {
     const { data } = await client
-      .from('Blog')
+      .from('blogs')
       .select('*')
       .order('created_at', { ascending: false });
 
