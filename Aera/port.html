@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Onkar Gaikwad — Astro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:          #020209;
+      --surface:     #0a0a1c;
+      --surface-2:   #0f0f24;
+      --border:      rgba(100,140,255,0.08);
+      --accent:      #5b8cf5;
+      --accent-soft: rgba(91,140,245,0.12);
+      --accent-2:    #9b7cf5;
+      --text:        #c8d2f0;
+      --text-muted:  #5c6490;
+      --text-bright: #eef0ff;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--accent) var(--surface);}
+    ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:var(--surface);}::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px;}
+    body{background:var(--bg);color:var(--text);font-family:'Jost',sans-serif;font-weight:300;overflow-x:hidden;cursor:none;}
+
+    /* ── Cursor ── */
+    #cursor{position:fixed;top:0;left:0;pointer-events:none;z-index:9999;width:10px;height:10px;background:var(--accent);border-radius:50%;transform:translate(-50%,-50%);transition:width .3s,height .3s;mix-blend-mode:screen;}
+    #cursor-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:9998;width:36px;height:36px;border:1px solid rgba(91,140,245,.4);border-radius:50%;transform:translate(-50%,-50%);transition:width .3s,height .3s;}
+    @media(pointer:coarse){#cursor,#cursor-ring{display:none;}body{cursor:auto;}}
+
+    /* ── Canvas & Nebula ── */
+    #space-canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;}
+    #nebula{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;
+      background:radial-gradient(ellipse 60% 40% at 80% 20%,rgba(70,40,120,.18) 0%,transparent 70%),
+                 radial-gradient(ellipse 50% 35% at 15% 70%,rgba(30,60,140,.15) 0%,transparent 70%);}
+
+    /* ── Nav ── */
+    nav{position:fixed;top:0;left:0;width:100%;z-index:100;padding:1.4rem 3rem;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(2,2,9,.92),transparent);backdrop-filter:blur(4px);}
+    .nav-logo{font-family:'Orbitron',monospace;font-size:1.05rem;font-weight:700;color:var(--text-bright);letter-spacing:.2em;text-decoration:none;}
+    .nav-logo span{color:var(--accent);}
+    .nav-right{display:flex;align-items:center;gap:2.5rem;}
+    .nav-links{display:flex;gap:2rem;list-style:none;}
+    .nav-links a{text-decoration:none;color:var(--text-muted);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;font-weight:500;transition:color .3s;position:relative;}
+    .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--accent);transition:width .3s;}
+    .nav-links a:hover{color:var(--text-bright);}
+    .nav-links a:hover::after{width:100%;}
+    .nav-avatar{width:38px;height:38px;border-radius:50%;overflow:hidden;border:1.5px solid rgba(91,140,245,.3);box-shadow:0 0 18px rgba(91,140,245,.25);transition:border-color .4s,transform .4s;cursor:none;display:block;}
+    .nav-avatar:hover{border-color:var(--accent);transform:scale(1.1) rotate(4deg);}
+    .nav-avatar img{width:100%;height:100%;object-fit:cover;}
+
+    /* ── Vertical HUD ── */
+    .vhud{writing-mode:vertical-rl;position:fixed;left:1.6rem;top:50%;transform:translateY(-50%);font-family:'Orbitron',monospace;font-size:.58rem;letter-spacing:.25em;color:var(--text-muted);opacity:.22;z-index:50;pointer-events:none;text-transform:uppercase;}
+
+    section{position:relative;z-index:10;}
+
+    /* ── Hero ── */
+    #hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6rem 2rem 4rem;}
+    .hero-eyebrow{font-family:'Orbitron',monospace;font-size:.68rem;font-weight:400;letter-spacing:.35em;text-transform:uppercase;color:var(--accent);margin-bottom:1.5rem;opacity:0;animation:fadeUp 1s .3s forwards;}
+    .hero-name{font-family:'Orbitron',monospace;font-size:clamp(3rem,9.5vw,7.5rem);font-weight:900;line-height:.9;letter-spacing:-.02em;opacity:0;animation:fadeUp 1s .5s forwards;background:linear-gradient(135deg,#eef0ff 0%,#8ba8f0 50%,#6b5ef0 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .hero-sub{font-size:clamp(.9rem,2.2vw,1.25rem);font-weight:300;letter-spacing:.07em;color:var(--text-muted);margin-top:1.4rem;opacity:0;animation:fadeUp 1s .7s forwards;}
+    .hero-sub span{color:var(--text);}
+    .hero-badge{display:inline-flex;align-items:center;gap:.5rem;margin-top:1rem;font-family:'Orbitron',monospace;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(91,140,245,.2);border-radius:20px;padding:.35rem 1rem;opacity:0;animation:fadeUp 1s .85s forwards;background:rgba(91,140,245,.05);}
+    .hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:blink 2s infinite;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+    .hero-cta{margin-top:2.8rem;display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;opacity:0;animation:fadeUp 1s .95s forwards;}
+    .btn{text-decoration:none;display:inline-block;padding:.75rem 2rem;font-family:'Jost',sans-serif;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:500;border-radius:2px;transition:all .3s;cursor:none;}
+    .btn-primary{background:var(--accent);color:var(--bg);box-shadow:0 0 30px rgba(91,140,245,.3);}
+    .btn-primary:hover{background:#7aaaf8;box-shadow:0 0 50px rgba(91,140,245,.5);transform:translateY(-2px);}
+    .btn-secondary{border:1px solid rgba(91,140,245,.3);color:var(--text);}
+    .btn-secondary:hover{border-color:var(--accent);color:var(--text-bright);background:var(--accent-soft);transform:translateY(-2px);}
+    .scroll-hint{position:absolute;bottom:2.2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;opacity:0;animation:fadeIn 1s 1.6s forwards;color:var(--text-muted);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;}
+    .scroll-line{width:1px;height:44px;background:linear-gradient(to bottom,var(--accent),transparent);animation:scrollPulse 2s infinite;}
+    @keyframes scrollPulse{0%,100%{opacity:.3;transform:scaleY(.5);transform-origin:top}50%{opacity:1;transform:scaleY(1)}}
+
+    /* ── About ── */
+    #about{padding:8rem 5rem;max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1.1fr;gap:5rem;align-items:center;}
+    .about-visual{position:relative;aspect-ratio:1;max-width:380px;}
+    .about-ring{position:absolute;border-radius:50%;border:1px solid rgba(91,140,245,.13);}
+    .about-ring:nth-child(1){inset:0;animation:rotateSlow 28s linear infinite;}
+    .about-ring:nth-child(2){inset:9%;animation:rotateSlow 20s linear infinite reverse;}
+    .about-ring:nth-child(3){inset:18%;animation:rotateSlow 14s linear infinite;}
+    .about-ring::before{content:'';position:absolute;width:6px;height:6px;border-radius:50%;background:var(--accent);top:50%;left:-3px;transform:translateY(-50%);box-shadow:0 0 10px var(--accent);}
+    .about-photo{position:absolute;inset:24%;border-radius:50%;overflow:hidden;border:1.5px solid rgba(91,140,245,.25);box-shadow:0 0 60px rgba(91,140,245,.12),inset 0 0 30px rgba(91,140,245,.05);}
+    .about-photo img{width:100%;height:100%;object-fit:cover;filter:grayscale(15%);transition:filter .5s;}
+    .about-photo:hover img{filter:grayscale(0);}
+    @keyframes rotateSlow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    .section-label{font-family:'Orbitron',monospace;font-size:.62rem;letter-spacing:.35em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;display:block;}
+    .section-title{font-family:'Orbitron',monospace;font-size:clamp(1.6rem,3.5vw,2.5rem);font-weight:700;line-height:1.1;color:var(--text-bright);margin-bottom:1.4rem;}
+    .about-text{font-size:.95rem;line-height:1.85;color:var(--text-muted);margin-bottom:.9rem;}
+    .about-stats{display:flex;gap:2.5rem;margin-top:2.5rem;flex-wrap:wrap;}
+    .stat-num{font-family:'Orbitron',monospace;font-size:1.9rem;font-weight:700;color:var(--accent);}
+    .stat-label{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-top:.2rem;}
+
+    /* ── Skills ── */
+    #skills{padding:8rem 5rem;max-width:1200px;margin:0 auto;}
+    .section-header{text-align:center;margin-bottom:4.5rem;}
+    .skills-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.2rem;}
+    .skill-card{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:1.8rem;position:relative;overflow:hidden;transition:border-color .3s,transform .3s;}
+    .skill-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity .3s;}
+    .skill-card:hover{border-color:rgba(91,140,245,.25);transform:translateY(-4px);}
+    .skill-card:hover::before{opacity:1;}
+    .skill-icon{width:40px;height:40px;background:var(--accent-soft);border:1px solid rgba(91,140,245,.2);border-radius:3px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;font-size:1.15rem;}
+    .skill-name{font-family:'Orbitron',monospace;font-size:.8rem;font-weight:600;color:var(--text-bright);margin-bottom:.45rem;letter-spacing:.05em;}
+    .skill-desc{font-size:.82rem;color:var(--text-muted);line-height:1.6;}
+    .skill-tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.9rem;}
+    .tag{font-size:.62rem;letter-spacing:.07em;text-transform:uppercase;padding:.22rem .55rem;background:rgba(91,140,245,.06);border:1px solid rgba(91,140,245,.11);border-radius:2px;color:var(--text-muted);}
+
+    /* ── Projects ── */
+    #projects{padding:8rem 5rem;max-width:1300px;margin:0 auto;}
+    .projects-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1.4rem;}
+
+    /* ── AERA HERO CARD ── */
+    .aera-hero{
+      grid-column:1 / -1;
+      display:grid;grid-template-columns:1.3fr 1fr;
+      background:var(--surface);border:1px solid rgba(91,140,245,.18);border-radius:4px;overflow:hidden;
+      position:relative;transition:box-shadow .5s,border-color .5s;
+    }
+    .aera-hero::before{
+      content:'FLAGSHIP';position:absolute;top:1.4rem;right:1.4rem;
+      font-family:'Orbitron',monospace;font-size:.55rem;letter-spacing:.3em;
+      color:var(--accent);border:1px solid rgba(91,140,245,.25);border-radius:12px;
+      padding:.3rem .85rem;background:rgba(91,140,245,.08);z-index:5;
+    }
+    .aera-hero:hover{box-shadow:0 0 80px rgba(91,140,245,.1),0 30px 80px rgba(0,0,0,.5);border-color:rgba(91,140,245,.35);}
+    .aera-canvas-wrap{position:relative;overflow:hidden;min-height:360px;}
+    .aera-canvas-wrap canvas{width:100%;height:100%;display:block;}
+    .aera-glow{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 30% 50%,rgba(91,140,245,.12),transparent);pointer-events:none;}
+    .aera-body{padding:3rem;display:flex;flex-direction:column;justify-content:center;border-left:1px solid rgba(91,140,245,.1);}
+    .aera-eyebrow{font-family:'Orbitron',monospace;font-size:.6rem;letter-spacing:.35em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;}
+    .aera-title{font-family:'Orbitron',monospace;font-size:clamp(1.4rem,3vw,2.2rem);font-weight:800;color:var(--text-bright);line-height:1.05;margin-bottom:1.2rem;}
+    .aera-desc{font-size:.9rem;color:var(--text-muted);line-height:1.8;margin-bottom:1.6rem;}
+    .aera-features{display:flex;flex-direction:column;gap:.7rem;margin-bottom:2rem;}
+    .aera-feat{display:flex;align-items:flex-start;gap:.7rem;font-size:.82rem;color:var(--text-muted);}
+    .aera-feat-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);margin-top:.45rem;flex-shrink:0;box-shadow:0 0 6px var(--accent);}
+    .aera-cta{display:flex;gap:1rem;flex-wrap:wrap;}
+
+    /* ── Standard project cards ── */
+    .p-card{
+      grid-column:span 4;
+      background:var(--surface);border:1px solid var(--border);border-radius:3px;overflow:hidden;
+      transition:transform .4s,border-color .4s,box-shadow .4s;position:relative;display:flex;flex-direction:column;
+    }
+    .p-card:hover{transform:translateY(-6px);border-color:rgba(91,140,245,.22);box-shadow:0 20px 60px rgba(0,0,0,.4),0 0 40px rgba(91,140,245,.05);}
+    .p-thumb{height:160px;position:relative;overflow:hidden;flex-shrink:0;}
+    .p-thumb canvas{width:100%;height:100%;display:block;}
+    .p-overlay{position:absolute;inset:0;background:rgba(2,2,9,.55);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;}
+    .p-card:hover .p-overlay{opacity:1;}
+    .p-body{padding:1.5rem;flex:1;display:flex;flex-direction:column;}
+    .p-num{font-family:'Orbitron',monospace;font-size:.6rem;font-weight:600;letter-spacing:.25em;color:var(--accent);margin-bottom:.4rem;}
+    .p-name{font-family:'Orbitron',monospace;font-size:.88rem;font-weight:600;color:var(--text-bright);margin-bottom:.6rem;line-height:1.3;}
+    .p-desc{font-size:.82rem;color:var(--text-muted);line-height:1.7;margin-bottom:1.1rem;flex:1;}
+    .p-links{display:flex;gap:1rem;flex-wrap:wrap;margin-top:auto;}
+    .p-link{text-decoration:none;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:500;transition:color .2s;}
+    .p-link:hover{color:var(--text-bright);}
+
+    /* Wide card spans */
+    .p-wide{grid-column:span 6;}
+    @media(max-width:900px){
+      .p-card,.p-wide{grid-column:1/-1;}
+      .aera-hero{grid-template-columns:1fr;}
+      .aera-canvas-wrap{min-height:240px;}
+      .aera-body{padding:2rem;border-left:none;border-top:1px solid rgba(91,140,245,.1);}
+    }
+
+    /* Embedded section header */
+    .sub-header{grid-column:1/-1;display:flex;align-items:center;gap:1.5rem;padding:2rem 0 .5rem;}
+    .sub-header-line{flex:1;height:1px;background:linear-gradient(to right,rgba(91,140,245,.2),transparent);}
+    .sub-header-text{font-family:'Orbitron',monospace;font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--text-muted);}
+
+    /* ── Contact ── */
+    #contact{padding:8rem 5rem;max-width:900px;margin:0 auto;text-align:center;}
+    .contact-email{font-family:'Orbitron',monospace;font-size:clamp(1rem,2.5vw,1.5rem);font-weight:400;letter-spacing:.04em;color:var(--text-bright);text-decoration:none;display:inline-block;margin:2rem 0 2.5rem;border-bottom:1px solid rgba(91,140,245,.3);padding-bottom:.5rem;transition:color .3s,border-color .3s;}
+    .contact-email:hover{color:var(--accent);border-color:var(--accent);}
+    .social-links{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;margin-top:2rem;}
+    .social-link{text-decoration:none;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);padding:.55rem 1.1rem;border:1px solid var(--border);border-radius:2px;transition:all .3s;cursor:none;}
+    .social-link:hover{color:var(--text-bright);border-color:rgba(91,140,245,.25);background:var(--accent-soft);}
+
+    /* ── Footer ── */
+    footer{position:relative;z-index:10;border-top:1px solid var(--border);padding:1.8rem 5rem;display:flex;align-items:center;justify-content:space-between;font-size:.72rem;color:var(--text-muted);letter-spacing:.07em;}
+    .footer-logo{font-family:'Orbitron',monospace;font-weight:700;color:var(--text-bright);}
+    .footer-logo span{color:var(--accent);}
+    .section-divider{position:relative;z-index:10;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(91,140,245,.14) 30%,rgba(91,140,245,.14) 70%,transparent 100%);margin:0 5rem;}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s ease;}
+    .reveal.visible{opacity:1;transform:translateY(0);}
+    .d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}.d4{transition-delay:.4s}.d5{transition-delay:.5s}
+
+    @media(max-width:900px){
+      nav{padding:1.2rem 1.5rem;}.nav-links{display:none;}
+      #about{grid-template-columns:1fr;padding:5rem 1.5rem;gap:3rem;}.about-visual{display:none;}
+      #skills,#projects,#contact{padding:5rem 1.5rem;}
+      .section-divider{margin:0 1.5rem;}
+      footer{padding:1.8rem 1.5rem;flex-direction:column;gap:.5rem;text-align:center;}
+      .vhud{display:none;}
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<canvas id="space-canvas"></canvas>
+<div id="nebula"></div>
+<div class="vhud">IIT_GANDHINAGAR // EMBEDDED · ML · FLUTTER // STATUS:MISSION_ACTIVE // 2026.sys</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-logo">ASTRO<span>.</span></a>
+  <div class="nav-right">
+    <ul class="nav-links">
+      <li><a href="#about">Identity</a></li>
+      <li><a href="#skills">Stack</a></li>
+      <li><a href="#projects">Missions</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a href="https://github.com/OnkarGaikwad-astro" target="_blank" class="nav-avatar">
+      <img src="https://qbppenfcbrszswmfmiop.supabase.co/storage/v1/object/public/images/WhatsApp%20Image%202026-03-09%20at%202.26.51%20PM.jpeg" alt="Onkar Gaikwad" />
+    </a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <p class="hero-eyebrow">✦ IIT Gandhinagar — Builder. Engineer. Astro. ✦</p>
+  <h1 class="hero-name">ONKAR<br>GAIKWAD</h1>
+  <p class="hero-sub"><span>Embedded Systems</span> &nbsp;·&nbsp; ML Engineer &nbsp;·&nbsp; <span>Flutter Developer</span></p>
+  <div class="hero-badge">Available for Opportunities</div>
+  <div class="hero-cta">
+    <a href="#projects" class="btn btn-primary">View Missions</a>
+    <a href="https://github.com/OnkarGaikwad-astro" target="_blank" class="btn btn-secondary">GitHub ↗</a>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-visual reveal">
+    <div class="about-ring"></div>
+    <div class="about-ring"></div>
+    <div class="about-ring"></div>
+    <div class="about-photo">
+      <img src="https://qbppenfcbrszswmfmiop.supabase.co/storage/v1/object/public/images/WhatsApp%20Image%202026-03-09%20at%202.26.51%20PM.jpeg" alt="Onkar Gaikwad" />
+    </div>
+  </div>
+  <div class="about-content">
+    <span class="section-label">// Identity.sys</span>
+    <h2 class="section-title reveal d1">I build things that<br>live between hardware<br>and ideas.</h2>
+    <p class="about-text reveal d2">
+      Undergraduate at IIT Gandhinagar, passionate about building real-world tech systems that span hardware and software. I work across embedded systems, BLE communication, machine learning pipelines, and mobile applications.
+    </p>
+    <p class="about-text reveal d3">
+      My goal is to ship technology that solves practical problems — from a servo responding to a magnetic field to an ML model predicting rent prices in real time. Call me <strong style="color:var(--accent)">Astro</strong>.
+    </p>
+    <div class="about-stats reveal d4">
+      <div><div class="stat-num">9+</div><div class="stat-label">Projects</div></div>
+      <div><div class="stat-num">3</div><div class="stat-label">Domains</div></div>
+      <div><div class="stat-num">IIT</div><div class="stat-label">Gandhinagar</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="section-header">
+    <span class="section-label">// Capabilities.log</span>
+    <h2 class="section-title reveal">My technical stack.</h2>
+  </div>
+  <div class="skills-grid">
+    <div class="skill-card reveal">
+      <div class="skill-icon">⟨/⟩</div>
+      <div class="skill-name">Languages</div>
+      <div class="skill-desc">Systems-level and cross-platform development across multiple paradigms.</div>
+      <div class="skill-tags"><span class="tag">C / C++</span><span class="tag">Python</span><span class="tag">Dart</span><span class="tag">JavaScript</span></div>
+    </div>
+    <div class="skill-card reveal d1">
+      <div class="skill-icon">⬡</div>
+      <div class="skill-name">Embedded & MCUs</div>
+      <div class="skill-desc">Real-time firmware for sensor integration, BLE communication, and actuator control.</div>
+      <div class="skill-tags"><span class="tag">ESP32-C3</span><span class="tag">nRF52840</span><span class="tag">Seeed XIAO</span><span class="tag">Arduino</span></div>
+    </div>
+    <div class="skill-card reveal d2">
+      <div class="skill-icon">◈</div>
+      <div class="skill-name">Machine Learning</div>
+      <div class="skill-desc">End-to-end ML pipelines from data preprocessing through hyperparameter tuning to deployment.</div>
+      <div class="skill-tags"><span class="tag">Scikit-learn</span><span class="tag">Random Forest</span><span class="tag">Optuna</span><span class="tag">Streamlit</span></div>
+    </div>
+    <div class="skill-card reveal d3">
+      <div class="skill-icon">◉</div>
+      <div class="skill-name">Mobile & Flutter</div>
+      <div class="skill-desc">Cross-platform mobile applications with real-time backends and modern UI/UX.</div>
+      <div class="skill-tags"><span class="tag">Flutter</span><span class="tag">Firebase</span><span class="tag">Real-time DB</span><span class="tag">Auth</span></div>
+    </div>
+    <div class="skill-card reveal d4">
+      <div class="skill-icon">▣</div>
+      <div class="skill-name">Wireless & IoT</div>
+      <div class="skill-desc">Building robust wireless pipelines between devices, sensors, and mobile apps.</div>
+      <div class="skill-tags"><span class="tag">BLE</span><span class="tag">IoT Systems</span><span class="tag">Serial Comms</span><span class="tag">Ultrasonic</span></div>
+    </div>
+    <div class="skill-card reveal d5">
+      <div class="skill-icon">∿</div>
+      <div class="skill-name">Tools & Workflow</div>
+      <div class="skill-desc">Day-to-day engineering workflow for multi-domain projects.</div>
+      <div class="skill-tags"><span class="tag">Git & GitHub</span><span class="tag">VS Code</span><span class="tag">Arduino IDE</span><span class="tag">Streamlit</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-header">
+    <span class="section-label">// Missions.log</span>
+    <h2 class="section-title reveal">Things I've shipped.</h2>
+  </div>
+
+  <div class="projects-grid">
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- AERA — FLAGSHIP HERO CARD                 -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="aera-hero reveal">
+      <div class="aera-canvas-wrap">
+        <canvas id="aera-hero-canvas"></canvas>
+        <div class="aera-glow"></div>
+      </div>
+      <div class="aera-body">
+        <div class="aera-eyebrow">// Mission — 01 · Flagship Application</div>
+        <div class="aera-title">Aera<br>Messenger</div>
+        <p class="aera-desc">
+          A real-time cross-platform messaging application built with Flutter. Focused on fast, reliable communication with a modern UI, secure authentication, and an optimized message delivery architecture.
+        </p>
+        <div class="aera-features">
+          <div class="aera-feat"><div class="aera-feat-dot"></div><span>⚡ Low-latency real-time messaging with instant delivery</span></div>
+          <div class="aera-feat"><div class="aera-feat-dot"></div><span>🔐 Secure authentication system</span></div>
+          <div class="aera-feat"><div class="aera-feat-dot"></div><span>🎯 Responsive cross-platform UI for Android & iOS</span></div>
+          <div class="aera-feat"><div class="aera-feat-dot"></div><span>📡 Scalable backend via Firebase with notification support</span></div>
+        </div>
+        <div class="skill-tags" style="margin-bottom:1.5rem;">
+          <span class="tag">Flutter</span><span class="tag">Dart</span><span class="tag">Firebase</span><span class="tag">Real-time DB</span><span class="tag">Python Backend</span>
+        </div>
+        <div class="aera-cta">
+          <a href="https://github.com/OnkarGaikwad-astro/Galexi/releases/download/v36/app-release.apk" target="_blank" class="btn btn-primary">↓ Download APK</a>
+          <a href="https://github.com/OnkarGaikwad-astro/Aera" target="_blank" class="btn btn-secondary">⌥ Source Code ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- ML & SOFTWARE PROJECTS                    -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="sub-header reveal">
+      <div class="sub-header-line"></div>
+      <div class="sub-header-text">ML & Software</div>
+      <div class="sub-header-line"></div>
+    </div>
+
+    <!-- RentCast -->
+    <div class="p-card p-wide reveal d1">
+      <div class="p-thumb"><canvas class="p-canvas" data-type="rentcast"></canvas>
+        <div class="p-overlay"><span style="font-family:'Orbitron',monospace;font-size:.68rem;letter-spacing:.2em;color:#eef0ff;">VIEW PROJECT →</span></div>
+      </div>
+      <div class="p-body">
+        <div class="p-num">MISSION — 02 // ML PIPELINE</div>
+        <div class="p-name">RentCast — ML-Based<br>Rent Prediction System</div>
+        <p class="p-desc">End-to-end machine learning system predicting rental prices using Random Forest. Applied advanced hyperparameter tuning (Grid Search, Random Search, Bayesian Optimization via Optuna) and deployed as a Streamlit web app for real-time predictions. Full pipeline: data preprocessing → model optimization → deployment.</p>
+        <div class="skill-tags" style="margin-bottom:1rem;"><span class="tag">Python</span><span class="tag">Random Forest</span><span class="tag">Optuna</span><span class="tag">Scikit-learn</span><span class="tag">Streamlit</span></div>
+        <div class="p-links">
+          <a href="https://github.com/OnkarGaikwad-astro/RentCast-ML-System" target="_blank" class="p-link">⌥ GitHub ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Face Recognition -->
+    <div class="p-card p-wide reveal d2">
+      <div class="p-thumb"><canvas class="p-canvas" data-type="face"></canvas>
+        <div class="p-overlay"><span style="font-family:'Orbitron',monospace;font-size:.68rem;letter-spacing:.2em;color:#eef0ff;">VIEW PROJECT →</span></div>
+      </div>
+      <div class="p-body">
+        <div class="p-num">MISSION — 03 // COMPUTER VISION</div>
+        <div class="p-name">Face Recognition System —<br>Lighting Adaptive Detection</div>
+        <p class="p-desc">Android application capable of adapting to varying lighting conditions while accurately detecting facial expressions. Combines lighting normalization with expression recognition to solve a real-world computer vision challenge in low-light and dynamic environments.</p>
+        <div class="skill-tags" style="margin-bottom:1rem;"><span class="tag">C++</span><span class="tag">Android</span><span class="tag">OpenCV</span><span class="tag">Computer Vision</span></div>
+        <div class="p-links">
+          <a href="https://github.com/OnkarGaikwad-astro/Face_Recognition" target="_blank" class="p-link">⌥ GitHub ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- InsIIT Blogs -->
+    <div class="p-card p-wide reveal d1">
+      <div class="p-thumb"><canvas class="p-canvas" data-type="insiit"></canvas>
+        <div class="p-overlay"><span style="font-family:'Orbitron',monospace;font-size:.68rem;letter-spacing:.2em;color:#eef0ff;">VIEW PROJECT →</span></div>
+      </div>
+      <div class="p-body">
+        <div class="p-num">MISSION — 04 // OPEN SOURCE · ⭐ 8 STARS</div>
+        <div class="p-name">InsIIT Blogs —<br>IIT Gandhinagar Platform</div>
+        <p class="p-desc">Blogging platform built for IIT Gandhinagar students, maintained under the Metis club. An open-source community project with active contributors, real-world usage, and significant engagement from the institute's student body.</p>
+        <div class="skill-tags" style="margin-bottom:1rem;"><span class="tag">JavaScript</span><span class="tag">MIT License</span><span class="tag">Open Source</span><span class="tag">Community</span></div>
+        <div class="p-links">
+          <a href="https://github.com/Metis-IITGandhinagar/InsIIT-Blogs" target="_blank" class="p-link">⌥ GitHub ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Finnovate -->
+    <div class="p-card p-wide reveal d2">
+      <div class="p-thumb"><canvas class="p-canvas" data-type="finnovate"></canvas>
+        <div class="p-overlay"><span style="font-family:'Orbitron',monospace;font-size:.68rem;letter-spacing:.2em;color:#eef0ff;">VIEW PROJECT →</span></div>
+      </div>
+      <div class="p-body">
+        <div class="p-num">MISSION — 05 // FINTECH</div>
+        <div class="p-name">Finnovate '25 —<br>Fintech Platform</div>
+        <p class="p-desc">Fintech platform developed as a collaborative Python project. Contributed to the backend systems powering financial workflows and tooling in a team-based environment.</p>
+        <div class="skill-tags" style="margin-bottom:1rem;"><span class="tag">Python</span><span class="tag">Fintech</span><span class="tag">Backend</span></div>
+        <div class="p-links">
+          <a href="https://github.com/advait87/Finnovate_25" target="_blank" class="p-link">⌥ GitHub ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- EMBEDDED / HARDWARE PROJECTS              -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="sub-header reveal">
+      <div class="sub-header-line"></div>
+      <div class="sub-header-text">Embedded & Hardware</div>
+      <div class="sub-header-line"></div>
+    </div>
+
+    <!-- BLE Comm -->
+    <div class="p-card reveal d1">
+      <div class="p-thumb"><canvas class="p-canvas" data-type="ble-comm"></canvas>
+        <div class="p-overlay"><span style="font-family:'Orbitron',monospace;font-size:.68rem;letter-spacing:.2em;color:#eef0ff;">DETAILS →</span></div>
+      </div>
+      <div class="p-body">
+        <div class="p-num">MISSION — 06</div>
+        <div class="p-name">BLE Communication<br>nRF52840 ↔ ESP32-C3</div>
+        <p class="p-desc">Wireless communication bridge between two MCUs using BLE. Peripheral + central logic for real-time bidirectional data transfer. Solved unstable connections and serial noise.</p>
+        <div class="skill-tags" style="margin-bottom:1rem;"><span class="tag">nRF52840</span><span class="tag">ESP32-C3</span><span class="tag">BLE</span></div>
+        <div class="p-links"><a href="https://github.com/OnkarGaikwad-astro" target="_blank" class="p-link">⌥ GitHub ↗</a></div>
+      </div>
+    </div>
+
+    <!-- Ultrasonic -->
+    <div class="p-card reveal d2">
+      <div class="p-thumb"><canvas class="p-canvas" data-type="ultrasonic"></canvas>
+        <div class="p-overlay"><span style="font-family:'Orbitron',monospace;font-size:.68rem;letter-spacing:.2em;color:#eef0ff;">DETAILS →</span></div>
+      </div>
+      <div class="p-body">
+        <div class="p-num">MISSION — 07</div>
+        <div class="p-name">Ultrasonic Sensor<br>BLE Data Stream</div>
+        <p class="p-desc">Streamed live distance readings from an ultrasonic sensor wirelessly over BLE to a mobile device. Resolved serial bugs and tuned accuracy for reliable output.</p>
+        <div class="skill-tags" style="margin-bottom:1rem;"><span class="tag">nRF52840</span><span class="tag">Ultrasonic</span><span class="tag">BLE</span></div>
+        <div class="p-links"><a href="https://github.com/OnkarGaikwad-astro" target="_blank" class="p-link">⌥ GitHub ↗</a></div>
+      </div>
+    </div>
+
+    <!-- Servo -->
+    <div class="p-card reveal d3">
+      <div class="p-thumb"><canvas class="p-canvas" data-type="servo"></canvas>
+        <div class="p-overlay"><span style="font-family:'Orbitron',monospace;font-size:.68rem;letter-spacing:.2em;color:#eef0ff;">DETAILS →</span></div>
+      </div>
+      <div class="p-body">
+        <div class="p-num">MISSION — 08</div>
+        <div class="p-name">BLE-Based<br>Servo Control System</div>
+        <p class="p-desc">Wireless motor positioning via BLE commands. Command-based pipeline synchronizing wireless input with hardware response for precise servo actuation.</p>
+        <div class="skill-tags" style="margin-bottom:1rem;"><span class="tag">ESP32-C3</span><span class="tag">Servo</span><span class="tag">BLE</span></div>
+        <div class="p-links"><a href="https://github.com/OnkarGaikwad-astro" target="_blank" class="p-link">⌥ GitHub ↗</a></div>
+      </div>
+    </div>
+
+    <!-- Magnetometer -->
+    <div class="p-card reveal d1">
+      <div class="p-thumb"><canvas class="p-canvas" data-type="magnetometer"></canvas>
+        <div class="p-overlay"><span style="font-family:'Orbitron',monospace;font-size:.68rem;letter-spacing:.2em;color:#eef0ff;">DETAILS →</span></div>
+      </div>
+      <div class="p-body">
+        <div class="p-num">MISSION — 09</div>
+        <div class="p-name">Magnetometer-Based<br>Control System</div>
+        <p class="p-desc">Magnetic field intensity mapped to servo movement. Dynamic, interactive control with sensor noise handling and calibration for smooth real-world response.</p>
+        <div class="skill-tags" style="margin-bottom:1rem;"><span class="tag">ESP32</span><span class="tag">Magnetometer</span><span class="tag">Servo</span></div>
+        <div class="p-links"><a href="https://github.com/OnkarGaikwad-astro" target="_blank" class="p-link">⌥ GitHub ↗</a></div>
+      </div>
+    </div>
+
+    <!-- Calci -->
+    <div class="p-card reveal d2">
+      <div class="p-thumb"><canvas class="p-canvas" data-type="calci"></canvas>
+        <div class="p-overlay"><span style="font-family:'Orbitron',monospace;font-size:.68rem;letter-spacing:.2em;color:#eef0ff;">DETAILS →</span></div>
+      </div>
+      <div class="p-body">
+        <div class="p-num">MISSION — 10</div>
+        <div class="p-name">Calci —<br>C++ Calculator</div>
+        <p class="p-desc">A C++ calculator project focused on systems-level programming fundamentals — operator logic, input parsing, and robust error handling.</p>
+        <div class="skill-tags" style="margin-bottom:1rem;"><span class="tag">C++</span><span class="tag">Systems</span></div>
+        <div class="p-links"><a href="https://github.com/OnkarGaikwad-astro/Calci" target="_blank" class="p-link">⌥ GitHub ↗</a></div>
+      </div>
+    </div>
+
+  </div><!-- /projects-grid -->
+</section>
+
+<div class="section-divider"></div>
+
+<!-- CONTACT -->
+<section id="contact">
+  <span class="section-label" style="display:block;text-align:center;">// Transmission.open</span>
+  <h2 class="section-title reveal" style="text-align:center;margin-top:.5rem;">Let's build<br>something real.</h2>
+  <p class="about-text reveal" style="max-width:540px;margin:1.5rem auto 0;text-align:center;">
+    Open to embedded systems projects, ML collaborations, internships, and anything interesting that sits at the intersection of hardware and software. My signal is always on.
+  </p>
+  <div style="text-align:center;">
+    <a href="mailto:Onkargaikwad3319@gmail.com" class="contact-email reveal">Onkargaikwad3319@gmail.com</a>
+  </div>
+  <div class="social-links reveal">
+    <a href="https://github.com/OnkarGaikwad-astro" target="_blank" class="social-link">GitHub</a>
+    <a href="https://www.linkedin.com/in/onkar-gaikwad-b64851322" target="_blank" class="social-link">LinkedIn</a>
+    <a href="https://www.instagram.com/_on_kar_3319/" target="_blank" class="social-link">Instagram</a>
+    <a href="mailto:Onkargaikwad3319@gmail.com" class="social-link">Email</a>
+    <a href="tel:+918055403319" class="social-link">+91 8055403319</a>
+  </div>
+</section>
+
+<footer>
+  <span class="footer-logo">ASTRO<span>.</span></span>
+  <span>IIT Gandhinagar // Embedded · ML · Flutter // 2026</span>
+  <span>Making devices talk since day one.</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ── Cursor ──────────────────────────────────
+const cursor=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px';});
+(function ar(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(ar);})();
+document.querySelectorAll('a,button').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cursor.style.width='18px';cursor.style.height='18px';ring.style.width='54px';ring.style.height='54px';});
+  el.addEventListener('mouseleave',()=>{cursor.style.width='10px';cursor.style.height='10px';ring.style.width='36px';ring.style.height='36px';});
+});
+
+// ── Three.js Scene ──────────────────────────
+const c3=document.getElementById('space-canvas');
+const renderer=new THREE.WebGLRenderer({canvas:c3,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,1000);
+camera.position.set(0,0,18);
+function mkStars(n,spread,sz,op){
+  const g=new THREE.BufferGeometry(),p=new Float32Array(n*3);
+  for(let i=0;i<n;i++){const th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=spread*.4+Math.random()*spread;p[i*3]=r*Math.sin(ph)*Math.cos(th);p[i*3+1]=r*Math.sin(ph)*Math.sin(th);p[i*3+2]=r*Math.cos(ph);}
+  g.setAttribute('position',new THREE.BufferAttribute(p,3));
+  return new THREE.Points(g,new THREE.PointsMaterial({color:0xd0d8ff,size:sz,transparent:true,opacity:op,sizeAttenuation:true}));
+}
+scene.add(mkStars(4500,120,.08,.72));scene.add(mkStars(2000,80,.13,.5));scene.add(mkStars(700,50,.2,.38));
+const pGroup=new THREE.Group();scene.add(pGroup);
+const pMesh=new THREE.Mesh(new THREE.SphereGeometry(3.5,128,128),new THREE.MeshPhongMaterial({color:0x0c1a48,emissive:0x05102a,specular:0x2244aa,shininess:22}));
+pGroup.add(pMesh);
+pGroup.add(new THREE.Mesh(new THREE.SphereGeometry(3.52,22,22),new THREE.MeshBasicMaterial({color:0x192e70,wireframe:true,transparent:true,opacity:.09})));
+function mkAtm(r,c,o){return new THREE.Mesh(new THREE.SphereGeometry(r,64,64),new THREE.MeshPhongMaterial({color:c,transparent:true,opacity:o,side:THREE.BackSide,depthWrite:false}));}
+pGroup.add(mkAtm(3.78,0x1a4aaa,.13));pGroup.add(mkAtm(4.05,0x0d2266,.07));pGroup.add(mkAtm(4.4,0x081840,.04));
+function mkRing(ir,or,c,op){const m=new THREE.Mesh(new THREE.RingGeometry(ir,or,128),new THREE.MeshBasicMaterial({color:c,side:THREE.DoubleSide,transparent:true,opacity:op}));m.rotation.x=Math.PI*.42;m.rotation.z=.2;return m;}
+pGroup.add(mkRing(4.7,5.9,0x3a6aaa,.17));pGroup.add(mkRing(6.1,6.9,0x2a4a88,.1));pGroup.add(mkRing(7.1,7.4,0x1a3060,.07));
+const rpg=new THREE.BufferGeometry();const rpp=new Float32Array(600*3);
+for(let i=0;i<600;i++){const a=(i/600)*Math.PI*2,r=5.4+(Math.random()-.5)*1.8,tl=.42;rpp[i*3]=r*Math.cos(a);rpp[i*3+1]=r*Math.sin(a)*Math.sin(tl);rpp[i*3+2]=r*Math.sin(a)*Math.cos(tl);}
+rpg.setAttribute('position',new THREE.BufferAttribute(rpp,3));
+pGroup.add(new THREE.Points(rpg,new THREE.PointsMaterial({color:0x5588cc,size:.04,transparent:true,opacity:.55})));
+const dG=new THREE.Group();scene.add(dG);
+for(let i=0;i<35;i++){
+  const m=new THREE.Mesh(new THREE.OctahedronGeometry(.02+Math.random()*.08),new THREE.MeshBasicMaterial({color:0x3a5a90,wireframe:Math.random()>.5}));
+  const r=11+Math.random()*18,th=Math.random()*Math.PI*2,ph=Math.random()*Math.PI;
+  m.position.set(r*Math.sin(ph)*Math.cos(th),r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph));
+  m.userData.ax=new THREE.Vector3(Math.random(),Math.random(),Math.random()).normalize();dG.add(m);
+}
+scene.add(new THREE.DirectionalLight(0x6090ee,1.4).position.set(15,5,10)&&new THREE.DirectionalLight(0x6090ee,1.4));
+const sun2=new THREE.DirectionalLight(0x6090ee,1.4);sun2.position.set(15,5,10);scene.add(sun2);
+scene.add(new THREE.AmbientLight(0x0a0a30,.6));
+const rim=new THREE.PointLight(0x2244cc,.4,80);rim.position.set(-12,8,-5);scene.add(rim);
+let scrollY=0;window.addEventListener('scroll',()=>scrollY=window.scrollY);
+let t=0;
+(function animate(){
+  requestAnimationFrame(animate);t+=.005;
+  pMesh.rotation.y+=.0014;pGroup.rotation.y+=.0007;
+  camera.position.x+=(mx/innerWidth-.5)*.014-camera.position.x*.01;
+  camera.position.y+=-(my/innerHeight-.5)*.014-camera.position.y*.01;
+  camera.lookAt(0,0,0);
+  const sf=scrollY/innerHeight;
+  pGroup.position.y=-sf*4;pGroup.position.x=sf*2;camera.position.z=18+sf*6;
+  dG.children.forEach(m=>m.rotateOnAxis(m.userData.ax,.005));
+  scene.children.forEach(o=>{if(o.isPoints)o.material.opacity=.38+Math.sin(t+o.id)*.1;});
+  renderer.render(scene,camera);
+})();
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+// Shooting stars
+(function ss(){
+  const sg=new THREE.BufferGeometry(),sm=new THREE.LineBasicMaterial({color:0x8aafff,transparent:true,opacity:0});
+  const sl=new THREE.Line(sg,sm);scene.add(sl);
+  function launch(){
+    const sx=(Math.random()-.5)*60,sy=20+Math.random()*10,sz=(Math.random()-.5)*20,len=4+Math.random()*6,dx=-.3-Math.random()*.4,dy=-.6-Math.random()*.3;
+    const pts=[new THREE.Vector3(sx,sy,sz),new THREE.Vector3(sx+dx*len,sy+dy*len,sz)];
+    sg.setFromPoints(pts);sm.opacity=.85;let d=0;
+    (function mv(){d+=.5;sg.setFromPoints([pts[0].clone().addScaledVector(new THREE.Vector3(dx,dy,0).normalize(),d),pts[1].clone().addScaledVector(new THREE.Vector3(dx,dy,0).normalize(),d)]);
+      if(d<40)requestAnimationFrame(mv);else{sm.opacity=0;setTimeout(launch,2000+Math.random()*5000);}})();
+  }
+  setTimeout(launch,1200);
+})();
+
+// ── Aera Hero Canvas (animated) ──────────────────
+(function aераHero(){
+  const cvs=document.getElementById('aera-hero-canvas');
+  if(!cvs)return;
+  const ctx=cvs.getContext('2d');
+  let W,H,msgs=[],particles=[];
+
+  function resize(){
+    W=cvs.width=cvs.parentElement.offsetWidth;
+    H=cvs.height=cvs.parentElement.offsetHeight;
+  }
+  resize();window.addEventListener('resize',resize);
+
+  // Message bubbles
+  const texts=['Hey! Got your message ✓✓','Aera is so smooth! ⚡','Real-time works great 🎯','Secure & fast 🔐'];
+  class Bubble{
+    constructor(side,text,delay){
+      this.side=side;this.text=text;this.delay=delay;
+      this.t=0;this.alpha=0;this.y=H*.2+Math.random()*H*.5;
+      this.w=Math.min(ctx.measureText?.(text)?.width+40||220,W*.5);
+    }
+    draw(){
+      if(this.t<this.delay){this.t++;return;}
+      this.alpha=Math.min(this.alpha+.04,1);
+      const x=this.side==='l'?W*.06:W-this.w-W*.06;
+      const y=this.y;const r=16;
+      ctx.save();ctx.globalAlpha=this.alpha*.85;
+      ctx.fillStyle=this.side==='l'?'rgba(91,140,245,.18)':'rgba(155,124,245,.18)';
+      ctx.strokeStyle=this.side==='l'?'rgba(91,140,245,.3)':'rgba(155,124,245,.3)';
+      ctx.lineWidth=1;
+      ctx.beginPath();ctx.roundRect(x,y,this.w,36,r);ctx.fill();ctx.stroke();
+      ctx.fillStyle=this.side==='l'?'rgba(180,205,255,.75)':'rgba(200,185,255,.75)';
+      ctx.font='12px Jost,sans-serif';ctx.textAlign=this.side==='l'?'left':'right';
+      ctx.fillText(this.text,this.side==='l'?x+14:x+this.w-14,y+22);
+      ctx.restore();
+    }
+  }
+
+  texts.forEach((t,i)=>msgs.push(new Bubble(i%2===0?'l':'r',t,i*80)));
+
+  // Floating particles
+  for(let i=0;i<60;i++){
+    particles.push({x:Math.random()*1,y:Math.random(),vx:(Math.random()-.5)*.0008,vy:(Math.random()-.5)*.0008,r:Math.random()*1.5+.3,op:Math.random()*.5+.1});
+  }
+
+  let frame=0;
+  (function loop(){
+    requestAnimationFrame(loop);frame++;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#030312';ctx.fillRect(0,0,W,H);
+
+    // Nebula BG
+    const g1=ctx.createRadialGradient(W*.3,H*.5,0,W*.3,H*.5,W*.6);
+    g1.addColorStop(0,'rgba(20,50,140,.35)');g1.addColorStop(1,'transparent');
+    ctx.fillStyle=g1;ctx.fillRect(0,0,W,H);
+    const g2=ctx.createRadialGradient(W*.75,H*.4,0,W*.75,H*.4,W*.4);
+    g2.addColorStop(0,'rgba(80,30,140,.25)');g2.addColorStop(1,'transparent');
+    ctx.fillStyle=g2;ctx.fillRect(0,0,W,H);
+
+    // Stars
+    particles.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=1;if(p.x>1)p.x=0;if(p.y<0)p.y=1;if(p.y>1)p.y=0;
+      ctx.beginPath();ctx.arc(p.x*W,p.y*H,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(200,215,255,${p.op+Math.sin(frame*.02+p.x*10)*.05})`;ctx.fill();
+    });
+
+    // Animated connection grid
+    ctx.strokeStyle='rgba(91,140,245,.04)';ctx.lineWidth=.5;
+    for(let x=0;x<W;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+    // Central pulse
+    const pulse=Math.sin(frame*.04)*.5+.5;
+    for(let r=20;r<120;r+=28){
+      ctx.beginPath();ctx.arc(W*.5,H*.5,r+pulse*10,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(91,140,245,${.12-(r*.0008)})`;ctx.lineWidth=1;ctx.stroke();
+    }
+    ctx.beginPath();ctx.arc(W*.5,H*.5,8+pulse*3,0,Math.PI*2);
+    ctx.fillStyle='rgba(91,140,245,.5)';ctx.fill();
+
+    // Bubbles
+    msgs.forEach(m=>m.draw());
+
+    // Phone outline
+    const px=W*.5-22,py=H*.5-40,pw=44,ph=80;
+    ctx.strokeStyle='rgba(91,140,245,.25)';ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.roundRect(px,py,pw,ph,8);ctx.stroke();
+    ctx.fillStyle='rgba(91,140,245,.06)';ctx.fill();
+    ctx.strokeStyle='rgba(91,140,245,.15)';ctx.lineWidth=.8;
+    ctx.beginPath();ctx.roundRect(px+4,py+8,pw-8,ph-16,4);ctx.stroke();
+  })();
+})();
+
+// ── Small Project Canvas Thumbnails ────────────
+function drawThumb(cvs){
+  const ctx=cvs.getContext('2d');
+  const type=cvs.dataset.type;
+  cvs.width=cvs.parentElement.offsetWidth||420;
+  cvs.height=cvs.parentElement.offsetHeight||160;
+  const w=cvs.width,h=cvs.height;
+  ctx.fillStyle='#030310';ctx.fillRect(0,0,w,h);
+  const P={
+    'rentcast':  [[10,60,100],[40,20,80]],
+    'face':      [[60,20,80],[20,60,80]],
+    'insiit':    [[20,80,60],[10,40,100]],
+    'finnovate': [[60,40,10],[20,60,30]],
+    'ble-comm':  [[10,30,100],[30,10,90]],
+    'ultrasonic':[[0,50,80],[10,80,60]],
+    'servo':     [[60,20,80],[80,40,20]],
+    'magnetometer':[[80,20,40],[40,10,80]],
+    'calci':     [[30,30,70],[60,30,60]],
+  };
+  const pal=P[type]||[[20,30,80],[40,20,70]];
+  const g1=ctx.createRadialGradient(w*.3,h*.4,0,w*.3,h*.4,w*.55);
+  g1.addColorStop(0,`rgba(${pal[0][0]},${pal[0][1]},${pal[0][2]},.45)`);g1.addColorStop(1,'transparent');
+  ctx.fillStyle=g1;ctx.fillRect(0,0,w,h);
+  const g2=ctx.createRadialGradient(w*.75,h*.6,0,w*.75,h*.6,w*.45);
+  g2.addColorStop(0,`rgba(${pal[1][0]},${pal[1][1]},${pal[1][2]},.35)`);g2.addColorStop(1,'transparent');
+  ctx.fillStyle=g2;ctx.fillRect(0,0,w,h);
+  for(let i=0;i<80;i++){ctx.beginPath();ctx.arc(Math.random()*w,Math.random()*h,Math.random()*1.3,0,Math.PI*2);ctx.fillStyle=`rgba(200,215,255,${.2+Math.random()*.55})`;ctx.fill();}
+  ctx.strokeStyle='rgba(60,100,200,.07)';ctx.lineWidth=.5;
+  for(let x=0;x<w;x+=28){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+  for(let y=0;y<h;y+=28){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+
+  if(type==='rentcast'){
+    // Bar chart
+    const bars=[.4,.65,.5,.85,.7,.55,.9];
+    const bw=w/10,gap=w/10;
+    bars.forEach((v,i)=>{
+      const x=gap+i*(bw+gap*.6),bh=h*.7*v,y=h*.85-bh;
+      ctx.fillStyle=`rgba(91,140,245,${.3+v*.4})`;
+      ctx.fillRect(x,y,bw,bh);
+    });
+    ctx.fillStyle='rgba(91,140,245,.8)';ctx.font='bold 9px monospace';ctx.textAlign='center';ctx.fillText('RENT PREDICTION',w*.5,h*.1);
+    ctx.strokeStyle='rgba(91,140,245,.3)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(gap*.7,h*.85);ctx.lineTo(w-gap*.3,h*.85);ctx.stroke();
+  } else if(type==='face'){
+    ctx.strokeStyle='rgba(0,180,160,.45)';ctx.lineWidth=1.2;
+    ctx.strokeRect(w*.3,h*.2,w*.4,h*.6);
+    ctx.beginPath();ctx.arc(w*.5,h*.5,h*.18,0,Math.PI*2);ctx.strokeStyle='rgba(0,200,180,.3)';ctx.stroke();
+    [[w*.38,h*.38],[w*.62,h*.38]].forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],h*.06,0,Math.PI*2);ctx.strokeStyle='rgba(0,180,160,.5)';ctx.stroke();});
+    ctx.beginPath();ctx.arc(w*.5,h*.6,h*.08,0,Math.PI,.false);ctx.strokeStyle='rgba(0,180,160,.5)';ctx.stroke();
+    ctx.fillStyle='rgba(0,200,180,.7)';ctx.font='bold 8px monospace';ctx.textAlign='center';ctx.fillText('FACE RECOGNITION',w*.5,h*.1);
+  } else if(type==='insiit'){
+    ctx.strokeStyle='rgba(80,200,120,.3)';ctx.lineWidth=.8;
+    for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(w*.1,h*(.22+i*.14));ctx.lineTo(w*.9,h*(.22+i*.14));ctx.stroke();}
+    ctx.fillStyle='rgba(80,200,120,.6)';ctx.fillRect(w*.1,h*.18,w*.15,h*.08);
+    ctx.fillStyle='rgba(80,200,120,.7)';ctx.font='bold 8px monospace';ctx.textAlign='center';ctx.fillText('InsIIT BLOGS',w*.5,h*.1);
+    ctx.fillStyle='rgba(255,180,0,.6)';ctx.font='9px monospace';ctx.fillText('⭐ 8',w*.75,h*.1);
+  } else if(type==='finnovate'){
+    const pts=[[w*.2,h*.7],[w*.35,h*.4],[w*.5,h*.55],[w*.65,h*.3],[w*.8,h*.5]];
+    ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+    ctx.strokeStyle='rgba(100,200,100,.5)';ctx.lineWidth=1.5;ctx.stroke();
+    pts.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],3,0,Math.PI*2);ctx.fillStyle='rgba(100,200,100,.7)';ctx.fill();});
+    ctx.fillStyle='rgba(100,200,100,.7)';ctx.font='bold 8px monospace';ctx.textAlign='center';ctx.fillText('FINNOVATE 25',w*.5,h*.1);
+  } else if(type==='ble-comm'){
+    const pts=[[w*.25,h*.5],[w*.75,h*.5]];
+    ctx.strokeStyle='rgba(91,140,245,.4)';ctx.lineWidth=1.2;ctx.setLineDash([4,6]);
+    ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);ctx.lineTo(pts[1][0],pts[1][1]);ctx.stroke();ctx.setLineDash([]);
+    pts.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],10,0,Math.PI*2);ctx.strokeStyle='rgba(91,140,245,.6)';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle='rgba(91,140,245,.12)';ctx.fill();});
+    for(let r=18;r<55;r+=14){ctx.beginPath();ctx.arc(w*.5,h*.5,r,0,Math.PI*2);ctx.strokeStyle=`rgba(91,140,245,${.12-(r*.0018)})`;ctx.lineWidth=.8;ctx.stroke();}
+    ctx.fillStyle='rgba(91,140,245,.7)';ctx.font='7px monospace';ctx.textAlign='center';
+    ctx.fillText('nRF52840',pts[0][0],pts[0][1]+22);ctx.fillText('ESP32-C3',pts[1][0],pts[1][1]+22);
+  } else if(type==='ultrasonic'){
+    for(let r=12;r<h*.85;r+=16){ctx.beginPath();ctx.arc(w*.15,h*.5,r,-Math.PI*.6,Math.PI*.6);ctx.strokeStyle=`rgba(0,180,160,${.5-(r*.004)})`;ctx.lineWidth=1;ctx.stroke();}
+    ctx.beginPath();ctx.arc(w*.15,h*.5,7,0,Math.PI*2);ctx.fillStyle='rgba(0,200,180,.6)';ctx.fill();
+    ctx.fillStyle='rgba(0,220,200,.9)';ctx.font='bold 13px monospace';ctx.textAlign='center';ctx.fillText('42 cm',w*.65,h*.55);
+    ctx.fillStyle='rgba(0,180,160,.5)';ctx.font='7px monospace';ctx.fillText('DISTANCE',w*.65,h*.36);
+  } else if(type==='servo'){
+    ctx.strokeStyle='rgba(155,124,245,.5)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(w*.5,h*.8,h*.55,-Math.PI,0);ctx.stroke();
+    const ang=-Math.PI+Math.PI*.65;
+    ctx.strokeStyle='rgba(155,124,245,.9)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(w*.5,h*.8);ctx.lineTo(w*.5+Math.cos(ang)*h*.5,h*.8+Math.sin(ang)*h*.5);ctx.stroke();
+    ctx.beginPath();ctx.arc(w*.5,h*.8,5,0,Math.PI*2);ctx.fillStyle='rgba(155,124,245,.7)';ctx.fill();
+    ctx.fillStyle='rgba(155,124,245,.8)';ctx.font='bold 8px monospace';ctx.textAlign='center';ctx.fillText('BLE SERVO',w*.5,h*.1);
+  } else if(type==='magnetometer'){
+    for(let i=0;i<5;i++){ctx.beginPath();ctx.ellipse(w*.5,h*.5,12+i*12,(12+i*12)*.38,Math.PI*.15,0,Math.PI*2);ctx.strokeStyle=`rgba(245,80,120,${.4-(i*.05)})`;ctx.lineWidth=.8;ctx.stroke();}
+    ctx.beginPath();ctx.arc(w*.5,h*.5,8,0,Math.PI*2);ctx.fillStyle='rgba(245,80,120,.5)';ctx.fill();
+    ctx.fillStyle='rgba(245,80,120,.8)';ctx.font='bold 8px monospace';ctx.textAlign='center';ctx.fillText('MAGNETIC FIELD',w*.5,h*.1);
+  } else if(type==='calci'){
+    const keys=['7','8','9','×','4','5','6','-','1','2','3','+','0','.','=','÷'];
+    const kw=w/6,kh=h/5;
+    keys.forEach((k,i)=>{const x=(i%4)*(kw+2)+w*.1,y=Math.floor(i/4)*(kh+2)+h*.2;
+      ctx.fillStyle=k==='='?'rgba(91,140,245,.3)':'rgba(91,140,245,.1)';
+      ctx.strokeStyle='rgba(91,140,245,.2)';ctx.lineWidth=.5;
+      ctx.fillRect(x,y,kw,kh);ctx.strokeRect(x,y,kw,kh);
+      ctx.fillStyle='rgba(200,215,255,.7)';ctx.font=`${kh*.45}px monospace`;ctx.textAlign='center';
+      ctx.fillText(k,x+kw/2,y+kh*.65);
+    });
+  }
+}
+document.querySelectorAll('.p-canvas').forEach(drawThumb);
+
+// ── Scroll Reveal ───────────────────────────
+const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible');}),{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
