@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Cosmic Logs</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at top, #020617, #000);
+  color: white;
+}
+
+/* 🌌 BACKGROUND */
+body::before {
+  content: "";
+  position: fixed;
+  width: 200%;
+  height: 200%;
+  background: url('https://www.transparenttextures.com/patterns/stardust.png');
+  animation: moveStars 120s linear infinite;
+  opacity: 0.12;
+}
+
+@keyframes moveStars {
+  from { transform: translate(0,0); }
+  to { transform: translate(-800px,-800px); }
+}
+
+/* 🧠 HEADER */
+header {
+  text-align: center;
+  padding: 18px;
+  font-size: 26px;
+  font-weight: bold;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* 📦 POSTS GRID */
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 15px;
+}
+
+/* 🪐 POST CARD */
+.post {
+  margin-top: 15px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: 0.3s;
+}
+
+.post:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 20px rgba(56,189,248,0.2);
+}
+
+.post h3 {
+  margin: 0;
+  color: #38bdf8;
+}
+
+.post p {
+  margin-top: 8px;
+}
+
+/* ➕ FLOATING BUTTON */
+.fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #38bdf8, #6366f1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(56,189,248,0.5);
+  z-index: 20;
+}
+
+/* 🧊 MODAL */
+.modal {
+  position: fixed;
+  bottom: -100%;
+  left: 0;
+  width: 100%;
+  background: #020617;
+  border-radius: 20px 20px 0 0;
+  padding: 20px;
+  transition: 0.4s;
+  z-index: 30;
+}
+
+.modal.active {
+  bottom: 0;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255,255,255,0.08);
+  color: white;
+}
+
+button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(45deg, #38bdf8, #6366f1);
+  color: white;
+}
+
+/* 📱 MOBILE OPT */
+@media (max-width: 480px) {
+  header {
+    font-size: 22px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>🚀 Cosmic Logbook</header>
+
+<div class="container" id="posts"></div>
+
+<!-- Floating Button -->
+<div class="fab" onclick="toggleModal()">+</div>
+
+<!-- Modal Editor -->
+<div class="modal" id="modal">
+  <h3>🛰️ New Log</h3>
+  <input id="title" placeholder="Signal title...">
+  <textarea id="content" rows="4" placeholder="Transmit your thoughts..."></textarea>
+  <button onclick="addPost()">Transmit</button>
+</div>
+
+<script>
+const SUPABASE_URL = "https://jbvuntnpqxbppktthupy.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpidnVudG5wcXhicHBrdHRodXB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MjI0NzcsImV4cCI6MjA5MjE5ODQ3N30.kQAOHQNUK8rQCvogh5YnqyjjisxXr8jaZSAAthlhaOM";
+
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function toggleModal() {
+  document.getElementById("modal").classList.toggle("active");
+}
+
+async function addPost() {
+  const title = document.getElementById("title").value;
+  const content = document.getElementById("content").value;
+
+  if (!title || !content) {
+    alert("Empty transmission 🚫");
+    return;
+  }
+
+  await client.from('blogs').insert([{ title, content }]);
+
+  toggleModal();
+  loadPosts();
+}
+
+async function loadPosts() {
+  const { data } = await client
+    .from('blogs')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  const container = document.getElementById("posts");
+  container.innerHTML = "";
+
+  data.forEach(post => {
+    container.innerHTML += `
+      <div class="post">
+        <h3>${post.title}</h3>
+        <small>${new Date(post.created_at).toLocaleString()}</small>
+        <p>${post.content}</p>
+      </div>
+    `;
+  });
+}
+
+loadPosts();
+</script>
+
+</body>
+</html>
