@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Astro Blog Cloud</title>
+</head>
+<body>
+
+<h2>Write Blog</h2>
+<input id="title" placeholder="Title"><br><br>
+<textarea id="content" placeholder="Content"></textarea><br><br>
+<button onclick="addPost()">Publish</button>
+
+<h2>Posts</h2>
+<div id="posts"></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+
+<script>
+  // 🔥 PASTE YOUR FIREBASE CONFIG HERE
+  const firebaseConfig = {
+    apiKey: "YOUR_KEY",
+    authDomain: "YOUR_PROJECT",
+    projectId: "YOUR_ID",
+  };
+
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  async function addPost() {
+    let title = document.getElementById("title").value;
+    let content = document.getElementById("content").value;
+
+    if (!title || !content) {
+      alert("Write something!");
+      return;
+    }
+
+    await db.collection("blogs").add({
+      title: title,
+      content: content,
+      date: new Date().toLocaleString()
+    });
+
+    loadPosts();
+  }
+
+  async function loadPosts() {
+    let postDiv = document.getElementById("posts");
+    postDiv.innerHTML = "";
+
+    const snapshot = await db.collection("blogs").orderBy("date", "desc").get();
+
+    snapshot.forEach(doc => {
+      let post = doc.data();
+      postDiv.innerHTML += `
+        <div style="border:1px solid white; margin:10px; padding:10px;">
+          <h3>${post.title}</h3>
+          <small>${post.date}</small>
+          <p>${post.content}</p>
+        </div>
+      `;
+    });
+  }
+
+  loadPosts();
+</script>
+
+</body>
+</html>
