@@ -106,8 +106,8 @@
 </div>
 
 <script>
-  const SUPABASE_URL = "YOUR_URL";
-  const SUPABASE_KEY = "YOUR_KEY";
+  const SUPABASE_URL = "https://jbvuntnpqxbppktthupy.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpidnVudG5wcXhicHBrdHRodXB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MjI0NzcsImV4cCI6MjA5MjE5ODQ3N30.kQAOHQNUK8rQCvogh5YnqyjjisxXr8jaZSAAthlhaOM";
 
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -120,7 +120,7 @@
       return;
     }
 
-    await supabase.from('blogs').insert([{ title, content }]);
+    await supabase.from('Blog').insert([{ title, content }]);
 
     document.getElementById("title").value = "";
     document.getElementById("content").value = "";
@@ -130,7 +130,7 @@
 
   async function loadPosts() {
     const { data } = await supabase
-      .from('blogs')
+      .from('Blog')
       .select('*')
       .order('created_at', { ascending: false });
 
