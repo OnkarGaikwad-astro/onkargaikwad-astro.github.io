@@ -5,83 +5,133 @@
 <title>Cosmic Logs</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
   body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
-    background: radial-gradient(circle at top, #0f172a, #020617);
+    background: radial-gradient(circle at top, #020617, #000);
     color: white;
     overflow-x: hidden;
   }
 
-  /* floating stars */
-  body::before {
+  /* 🌌 MULTI-LAYER STARS */
+  body::before, body::after {
     content: "";
     position: fixed;
     width: 200%;
     height: 200%;
     background: url('https://www.transparenttextures.com/patterns/stardust.png');
-    animation: moveStars 60s linear infinite;
-    opacity: 0.2;
+    animation: moveStars 120s linear infinite;
+    opacity: 0.15;
+  }
+
+  body::after {
+    animation-duration: 200s;
+    opacity: 0.08;
   }
 
   @keyframes moveStars {
     from { transform: translate(0,0); }
-    to { transform: translate(-500px,-500px); }
+    to { transform: translate(-800px,-800px); }
   }
 
   header {
     text-align: center;
-    padding: 20px;
-    font-size: 28px;
-    letter-spacing: 3px;
+    padding: 30px;
+    font-size: 34px;
+    letter-spacing: 4px;
+    font-weight: bold;
+    background: linear-gradient(90deg, #38bdf8, #6366f1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   .container {
-    max-width: 800px;
+    max-width: 850px;
     margin: auto;
     padding: 20px;
   }
 
+  /* 🧊 GLASS PANEL */
   .glass {
     background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(10px);
-    padding: 20px;
-    border-radius: 15px;
-    margin-bottom: 20px;
+    backdrop-filter: blur(15px);
+    padding: 25px;
+    border-radius: 20px;
+    margin-bottom: 25px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 0 40px rgba(56,189,248,0.1);
   }
 
   input, textarea {
     width: 100%;
-    padding: 10px;
-    margin-top: 10px;
+    padding: 12px;
+    margin-top: 12px;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     outline: none;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.08);
     color: white;
+    transition: 0.3s;
+  }
+
+  input:focus, textarea:focus {
+    background: rgba(255,255,255,0.12);
+    box-shadow: 0 0 10px #38bdf8;
   }
 
   button {
-    margin-top: 10px;
-    padding: 10px 15px;
+    margin-top: 15px;
+    padding: 12px 18px;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     background: linear-gradient(45deg, #38bdf8, #6366f1);
     cursor: pointer;
     color: white;
+    font-weight: bold;
+    transition: 0.3s;
   }
 
+  button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #38bdf8;
+  }
+
+  /* 🪐 POSTS */
   .post {
-    margin-top: 15px;
-    padding: 15px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.05);
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 15px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    animation: fadeUp 0.5s ease;
     transition: 0.3s;
   }
 
   .post:hover {
-    transform: scale(1.02);
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 0 25px rgba(99,102,241,0.2);
+  }
+
+  .post h3 {
+    margin: 0;
+    color: #38bdf8;
+  }
+
+  .post small {
+    opacity: 0.6;
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
 </style>
@@ -94,7 +144,7 @@
 <div class="container">
 
   <div class="glass">
-    <h3>Log Entry</h3>
+    <h3>🛰️ Log Entry</h3>
     <input id="title" placeholder="Signal title...">
     <textarea id="content" rows="4" placeholder="Transmit your thoughts..."></textarea>
     <button onclick="addPost()">Transmit</button>
