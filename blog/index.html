@@ -1,63 +1,147 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Astro Blog Cloud</title>
+<meta charset="UTF-8">
+<title>Cosmic Logbook</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<style>
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top, #0f172a, #020617);
+    color: white;
+    overflow-x: hidden;
+  }
+
+  /* floating stars */
+  body::before {
+    content: "";
+    position: fixed;
+    width: 200%;
+    height: 200%;
+    background: url('https://www.transparenttextures.com/patterns/stardust.png');
+    animation: moveStars 60s linear infinite;
+    opacity: 0.2;
+  }
+
+  @keyframes moveStars {
+    from { transform: translate(0,0); }
+    to { transform: translate(-500px,-500px); }
+  }
+
+  header {
+    text-align: center;
+    padding: 20px;
+    font-size: 28px;
+    letter-spacing: 3px;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+  }
+
+  .glass {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+  }
+
+  input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    outline: none;
+    background: rgba(255,255,255,0.1);
+    color: white;
+  }
+
+  button {
+    margin-top: 10px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(45deg, #38bdf8, #6366f1);
+    cursor: pointer;
+    color: white;
+  }
+
+  .post {
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    transition: 0.3s;
+  }
+
+  .post:hover {
+    transform: scale(1.02);
+  }
+
+</style>
 </head>
+
 <body>
 
-<h2>Write Blog</h2>
-<input id="title" placeholder="Title"><br><br>
-<textarea id="content" placeholder="Content"></textarea><br><br>
-<button onclick="addPost()">Publish</button>
+<header>🚀 Cosmic Logbook</header>
 
-<h2>Posts</h2>
-<div id="posts"></div>
+<div class="container">
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+  <div class="glass">
+    <h3>Log Entry</h3>
+    <input id="title" placeholder="Signal title...">
+    <textarea id="content" rows="4" placeholder="Transmit your thoughts..."></textarea>
+    <button onclick="addPost()">Transmit</button>
+  </div>
+
+  <div id="posts"></div>
+
+</div>
 
 <script>
-  // 🔥 PASTE YOUR FIREBASE CONFIG HERE
-  const firebaseConfig = {
-    apiKey: "YOUR_KEY",
-    authDomain: "YOUR_PROJECT",
-    projectId: "YOUR_ID",
-  };
+  const SUPABASE_URL = "YOUR_URL";
+  const SUPABASE_KEY = "YOUR_KEY";
 
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   async function addPost() {
-    let title = document.getElementById("title").value;
-    let content = document.getElementById("content").value;
+    const title = document.getElementById("title").value;
+    const content = document.getElementById("content").value;
 
     if (!title || !content) {
-      alert("Write something!");
+      alert("Empty transmission 🚫");
       return;
     }
 
-    await db.collection("blogs").add({
-      title: title,
-      content: content,
-      date: new Date().toLocaleString()
-    });
+    await supabase.from('blogs').insert([{ title, content }]);
+
+    document.getElementById("title").value = "";
+    document.getElementById("content").value = "";
 
     loadPosts();
   }
 
   async function loadPosts() {
-    let postDiv = document.getElementById("posts");
-    postDiv.innerHTML = "";
+    const { data } = await supabase
+      .from('blogs')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-    const snapshot = await db.collection("blogs").orderBy("date", "desc").get();
+    const container = document.getElementById("posts");
+    container.innerHTML = "";
 
-    snapshot.forEach(doc => {
-      let post = doc.data();
-      postDiv.innerHTML += `
-        <div style="border:1px solid white; margin:10px; padding:10px;">
+    data.forEach(post => {
+      container.innerHTML += `
+        <div class="post">
           <h3>${post.title}</h3>
-          <small>${post.date}</small>
+          <small>${new Date(post.created_at).toLocaleString()}</small>
           <p>${post.content}</p>
         </div>
       `;
