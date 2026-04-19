@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <title>Cosmic Logs</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   body {
     margin: 0;
@@ -109,7 +108,7 @@
   const SUPABASE_URL = "https://jbvuntnpqxbppktthupy.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpidnVudG5wcXhicHBrdHRodXB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MjI0NzcsImV4cCI6MjA5MjE5ODQ3N30.kQAOHQNUK8rQCvogh5YnqyjjisxXr8jaZSAAthlhaOM";
 
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   async function addPost() {
     const title = document.getElementById("title").value;
@@ -120,7 +119,7 @@
       return;
     }
 
-    await supabase.from('Blog').insert([{ title, content }]);
+    await client.from('Blog').insert([{ title, content }]);
 
     document.getElementById("title").value = "";
     document.getElementById("content").value = "";
@@ -129,7 +128,7 @@
   }
 
   async function loadPosts() {
-    const { data } = await supabase
+    const { data } = await client
       .from('Blog')
       .select('*')
       .order('created_at', { ascending: false });
