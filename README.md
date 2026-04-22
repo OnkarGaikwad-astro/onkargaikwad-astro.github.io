@@ -1,8 +1,6 @@
 # 🌌 Astro Portfolio  
 > A digital space where code, creativity, and curiosity collide.
 
-![Portfolio Banner](https://share.google/Zc0hJIdFLvWpZjtNH)
-
 ---
 
 ## 🚀 About the Project  
