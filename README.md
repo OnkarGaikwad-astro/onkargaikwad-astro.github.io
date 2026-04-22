@@ -1,7 +1,7 @@
 # 🌌 Astro Portfolio  
 > A digital space where code, creativity, and curiosity collide.
 
-![Portfolio Banner](https://via.placeholder.com/1200x400?text=Portfolio+Preview)
+![Portfolio Banner](https://share.google/Zc0hJIdFLvWpZjtNH)
 
 ---
 
