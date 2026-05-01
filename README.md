@@ -53,7 +53,7 @@ Hi, I'm **Onkar Chandrakant Gaikwad** 👨‍💻
 ---
 
 ## 🌍 Live Website  
-👉 https://yourdomain.com  
+👉 https://astronkar.in  
 
 ---
 
