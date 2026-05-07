@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Astro's Blogs</title>
+    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+
+    <header class="navbar">
+        <h2>Aera Blogs</h2>
+        <input type="text" id="search" placeholder="🔍  Search articles...">
+    </header>
+
+    <section class="cards"></section>
+
+    <div class="popup" style="display: none;">
+            <h1>Add New Blog</h1>
+            <textarea type="text" name="title" class="title" placeholder="Title..." required></textarea>
+            <br>
+            <textarea name="content" class="content" placeholder="Content..." required></textarea>
+            <br><button id="close">
+                <h3>Done</h3>
+            </button>
+    </div>
+
+    <section class="new">
+        <button>+</button>
+    </section>
+
+    <script type="module" src="script.js"></script>
+
+</body>
+
+</html>
