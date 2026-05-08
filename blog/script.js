@@ -2,13 +2,14 @@ import { createClient }
     from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 let cards = document.querySelector(".cards");
 
-function createCard(title, content, likes, id) {
+function createCard(title, content, likes, id, time) {
     let card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
     <h2>${title}</h2>
     <p>${content}</p>
     <button  class="but">❤️ <b>${likes}</b></button>
+    <b class="timestamp">${time}</b>
     `;
     let button = card.querySelector(".but");
     let isliked = false;
@@ -51,8 +52,19 @@ async function fetchdata() {
                 ascending: false
             });;
     data.forEach(item => {
+        let time =
+            item.created_at;
+        let indianTime =
+            new Date(time).toLocaleString(
+                "en-IN",
+                {
+                    timeZone: "Asia/Kolkata"
+                }
+            );
+
+        console.log(indianTime);
         cards.appendChild(
-            createCard(item.title, item.content, item.likes, item.id)
+            createCard(item.title, item.content, item.likes, item.id, indianTime)
         );
     });
 }
@@ -107,21 +119,29 @@ let cont = document.querySelector(".popup").querySelector(".content");
 
 let close = document.querySelector("#close");
 close.addEventListener("click", () => {
-    popup.style.display = "none";
-    if(tit.value != "" && cont.value != ""){
-    newblog(tit.value,cont.value);
-    let card = createCard(tit.value,cont.value,0,0);
-    cards.prepend(card);
+    if (tit.value != "" && cont.value != "") {
+        popup.style.display = "none";
+        newblog(tit.value, cont.value);
+        let card = createCard(tit.value, cont.value, 0, 0);
+        cards.prepend(card);
+    } else {
+        alert("Title and Content Required. . .");
     }
 
 });
 
 
 async function newblog(title, content) {
-        await supabase
-            .from("blogs")
-            .insert({
-                "title":title,
-                "content":content
-            })
+    await supabase
+        .from("blogs")
+        .insert({
+            "title": title,
+            "content": content
+        })
 }
+
+
+let cancel = document.querySelector("#cancel");
+cancel.addEventListener("click", () => {
+    popup.style.display = "none";
+});
